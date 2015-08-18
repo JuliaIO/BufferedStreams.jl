@@ -134,23 +134,22 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
     return chunk
 end
 
-
+# TODO: specialization for IOStream that gets the filesize?
 function Base.readbytes!(stream::BufferedInputStream,
                          buffer::AbstractArray{Uint8}, nb=length(buffer))
     oldbuflen = buflen = length(buffer)
     outpos = 1
-    while !eof(stream)
+    while !eof(stream) && outpos <= nb
         if stream.position > stream.available && fillbuffer!(stream) < 1
             throw(EOFError())
         end
 
-        if outpos > buflen
-            buflen = 2 * (1+buflen)
+        num_chunk_bytes = min(nb - outpos + 1, stream.available - stream.position + 1)
+        if outpos + num_chunk_bytes > buflen
+            buflen = max(buflen + num_chunk_bytes, 2*buflen)
             resize!(buffer, buflen)
         end
 
-        num_chunk_bytes = min(stream.available - stream.position + 1,
-                              length(buffer) - outpos + 1)
         copy!(buffer, outpos, stream.buffer, stream.position, num_chunk_bytes)
         stream.position += num_chunk_bytes
         outpos += num_chunk_bytes

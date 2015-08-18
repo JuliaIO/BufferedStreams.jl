@@ -10,18 +10,18 @@ const gzfilename = "Homo_sapiens.GRCh38.cds.all.fa.gz"
 
 
 const methods = [
-    ("IOStream",             () -> open(filename)),
-    ("BufferedStreams",      () -> BufferedStreams.BufferedInputStream(open(filename))),
-    ("BufferedStreams/Mmap", () -> BufferedStreams.BufferedInputStream(
-                                        Mmap.mmap(open(filename), Vector{UInt8}, (filesize(filename),)))),
-    ("IOBuffer/Mmap",        () -> IOBuffer(Mmap.mmap(open(filename), Vector{UInt8}, (filesize(filename),)))),
-    ("GZip",                 () -> GZip.gzopen(gzfilename)),
-    ("Zlib",                 () -> Zlib.Reader(open(gzfilename))),
-    ("Libz",                 () -> Libz.ZlibInputStream(open(gzfilename))),
-    ("Libz/Mmap",            () -> Libz.ZlibInputStream(
-                                        Mmap.mmap(open(gzfilename), Vector{UInt8}, (filesize(gzfilename),)))),
-    ("GZBufferedStream",     () -> GZBufferedStream(gzopen(gzfilename))),
-    ("gzip/Pipe",             () -> open(`gzip -cd $gzfilename`)[1]),
+    ("IOStream",                      () -> open(filename)),
+    ("BufferedInputStream/IOStream",  () -> BufferedStreams.BufferedInputStream(open(filename))),
+    ("BufferedInputStream/Mmap",      () -> BufferedStreams.BufferedInputStream(
+                                                Mmap.mmap(open(filename), Vector{UInt8}, (filesize(filename),)))),
+    ("IOBuffer/Mmap",                 () -> IOBuffer(Mmap.mmap(open(filename), Vector{UInt8}, (filesize(filename),)))),
+    ("GZip",                          () -> GZip.gzopen(gzfilename)),
+    ("Zlib",                          () -> Zlib.Reader(open(gzfilename))),
+    ("Libz",                          () -> Libz.ZlibInputStream(open(gzfilename))),
+    ("Libz/Mmap",                     () -> Libz.ZlibInputStream(
+                                                 Mmap.mmap(open(gzfilename), Vector{UInt8}, (filesize(gzfilename),)))),
+    ("GZBufferedStream",              () -> GZBufferedStream(gzopen(gzfilename))),
+    ("gzip/Pipe",                     () -> open(`gzip -cd $gzfilename`)[1]),
 ]
 
 
