@@ -17,6 +17,9 @@ This function should:
 TODO: maybe there shoulde be a mechanism from the source to notify the caller
 that it needs more space in the buffer to fill anything.
 
+TODO: The `to` is maybe always length(buffer). In that case we should probably
+change this to refillfrom!(source, buffer, from)
+
 Failure to read any new data into the buffer is interpreted as eof.
 """
 type BufferedInputStream{T} <: IO
@@ -39,18 +42,13 @@ type BufferedInputStream{T} <: IO
 end
 
 
-function BufferedInputStream{T}(source::T, buflen::Int=8192)
+function BufferedInputStream{T}(source::T, buflen::Int=100000)
     BufferedInputStream{T}(source, Array(Uint8, buflen), 1, 0, 0, false)
 end
 
 
-# Should we be able to call fillbuffer! when position is not at the end?
-
 """
 Refill the buffer, optionally moving and retaining part of the data.
-
-TODO: Define semantics carefull...
-
 """
 function fillbuffer!(stream::BufferedInputStream)
     oldbuflen = buflen = length(stream.buffer)
@@ -94,7 +92,7 @@ end
 """
 Read and return one byte from the input stream.
 """
-@inline function Base.read{T}(stream::BufferedInputStream{T}, ::Type{UInt8})
+@inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
     position = stream.position
     if position > stream.available
         if fillbuffer!(stream) < 1
@@ -105,6 +103,59 @@ Read and return one byte from the input stream.
     @inbounds c = stream.buffer[position]
     stream.position = position + 1
     return c
+end
+
+
+# Special purpose readuntil for plain bytes.
+function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
+    anchor!(stream)
+    while true
+        p0 = pointer(stream.buffer, stream.position)
+        p1 = ccall(:memchr, Ptr{UInt8}, (Ptr{UInt8}, Cint, Csize_t),
+                   p0, delim, stream.available - stream.position + 1)
+        if p1 != C_NULL
+            stream.position += p1 - p0
+            break
+        else
+            stream.position = stream.available + 1
+            nb = fillbuffer!(stream)
+            if nb == 0
+                break
+            end
+        end
+    end
+    chunk = stream.buffer[upanchor!(stream):stream.position]
+    stream.position += 1
+    return chunk
+end
+
+
+function Base.readbytes!(stream::BufferedInputStream,
+                         buffer::AbstractArray{Uint8}, nb=length(buffer))
+    oldbuflen = buflen = length(buffer)
+    outpos = 1
+    while !eof(stream)
+        if stream.position > stream.available && fillbuffer!(stream) < 1
+            throw(EOFError())
+        end
+
+        if outpos > buflen
+            buflen = 2 * (1+buflen)
+            resize!(buffer, buflen)
+        end
+
+        num_chunk_bytes = min(stream.available - stream.position + 1,
+                              length(b) - outpos + 1)
+        copy!(b, outpos, zstream.output_buffer, zstream.output_pos, num_chunk_bytes)
+        zstream.output_pos += num_chunk_bytes
+        outpos += num_chunk_bytes
+    end
+
+    if buflen > oldbuflen
+        resize!(buffer, outpos - 1)
+    end
+
+    return outpos - 1
 end
 
 
