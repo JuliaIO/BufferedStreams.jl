@@ -1,7 +1,12 @@
 
 module BufferedStreams
 
-export BufferedInputStream, EmptyStreamSource, fillbuffer!, anchor!, upanchor!
+export BufferedInputStream,
+       EmptyStreamSource,
+       fillbuffer!,
+       anchor!,
+       upanchor!,
+       takeanchored!
 
 
 """
@@ -72,7 +77,7 @@ function fillbuffer!(stream::BufferedInputStream)
     end
 
     nb = readbytes!(stream.source, stream.buffer, keeplen + 1, buflen)
-    stream.available = nb
+    stream.available = nb + keeplen
 
     if nb == 0
         stream.source_finished = true
@@ -175,6 +180,21 @@ function upanchor!(stream::BufferedInputStream)
     stream.anchor = 0
     return anchor
 end
+
+
+"""
+Copy and return a byte array from the anchor to the current position, also
+removing the anchor.
+"""
+function takeanchored!(stream::BufferedInputStream)
+    if stream.position > stream.available
+        throw(EOFError())
+    end
+    chunk = stream.buffer[stream.anchor:stream.position]
+    stream.anchor = 0
+    return chunk
+end
+
 
 
 include("sources.jl")
