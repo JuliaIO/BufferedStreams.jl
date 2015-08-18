@@ -1,10 +1,22 @@
 
+"""
+EmptyStreamSource is a dummy source to allow BufferedInputStream to wrap an
+array without additional buffering.
+"""
+immutable EmptyStreamSource end
 
-# Useful for wrapping an array or mmaped data in a BufferedInputStream
-# TODO: I should probably introduce some special type instead of using Nothing
-
-function Base.readbytes!(source::Nothing, buffer::Vector{UInt8}, from::Int, to::Int)
+function Base.readbytes!(source::EmptyStreamSource, buffer::Vector{UInt8}, from::Int, to::Int)
     return 0
+end
+
+
+function Base.eof(source::EmptyStreamSource)
+    return true
+end
+
+
+function BufferedInputStream(data::Vector{UInt8})
+    return BufferedInputStream{EmptyStreamSource}(EmptyStreamSource(), data, 1, length(data), 0, true)
 end
 
 
@@ -30,6 +42,12 @@ end
 #
 # Like: assume eof if we read zero bytes. Try to fill the buffer on
 # initialization, that way the source_finished flag is always up to date.
+#
+# It won't really be up to date unless we always call fillbuffer! when there is
+# something still in the buffer to get.
+#
+# Maybe that's a good idea. Get the byte, then check if we need to fill the
+# buffer.
 
 function Base.readbytes!(source::Base.FS.File, buffer::Vector{UInt8}, from::Int, to::Int)
     nb = ccall(:jl_fs_read, Cint, (Cint, Ptr{Cchar}, Csize_t),

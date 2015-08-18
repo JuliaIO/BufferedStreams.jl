@@ -43,7 +43,7 @@ end
 
 
 function BufferedInputStream{T}(source::T, buflen::Int=100000)
-    BufferedInputStream{T}(source, Array(Uint8, buflen), 1, 0, 0, false)
+    return BufferedInputStream{T}(source, Array(Uint8, buflen), 1, 0, 0, false)
 end
 
 
@@ -145,9 +145,9 @@ function Base.readbytes!(stream::BufferedInputStream,
         end
 
         num_chunk_bytes = min(stream.available - stream.position + 1,
-                              length(b) - outpos + 1)
-        copy!(b, outpos, zstream.output_buffer, zstream.output_pos, num_chunk_bytes)
-        zstream.output_pos += num_chunk_bytes
+                              length(buffer) - outpos + 1)
+        copy!(buffer, outpos, stream.buffer, stream.position, num_chunk_bytes)
+        stream.position += num_chunk_bytes
         outpos += num_chunk_bytes
     end
 
