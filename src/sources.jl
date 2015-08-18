@@ -35,28 +35,3 @@ function Base.readbytes!(source::IOStream, buffer::Vector{UInt8}, from::Int, to:
                  pointer(buffer, from), to - from + 1)
 end
 
-
-# TODO: We need some way to detect EOF without having to read anything.
-#
-# I wonder if I can reconfigure things to not insist on a `eof` function.
-#
-# Like: assume eof if we read zero bytes. Try to fill the buffer on
-# initialization, that way the source_finished flag is always up to date.
-#
-# It won't really be up to date unless we always call fillbuffer! when there is
-# something still in the buffer to get.
-#
-# Maybe that's a good idea. Get the byte, then check if we need to fill the
-# buffer.
-
-function Base.readbytes!(source::Base.FS.File, buffer::Vector{UInt8}, from::Int, to::Int)
-    nb = ccall(:jl_fs_read, Cint, (Cint, Ptr{Cchar}, Csize_t),
-                 source.handle, pointer(buffer, from), to - from + 1)
-    return nb
-end
-
-
-# TODO: how....?
-function Base.eof(source::Base.FS.File)
-    return false
-end

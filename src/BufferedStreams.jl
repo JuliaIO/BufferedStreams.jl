@@ -1,7 +1,7 @@
 
 module BufferedStreams
 
-export BufferedInputStream, fillbuffer!, anchor!, upanchor!
+export BufferedInputStream, EmptyStreamSource, fillbuffer!, anchor!, upanchor!
 
 
 """
