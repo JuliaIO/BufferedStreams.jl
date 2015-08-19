@@ -51,8 +51,7 @@ Pipe/gzip |  56.6504
  read line | time (in seconds)
 -----------|--------------------
 IOStream |  0.6803
-BufferedInputStream/IOStream |
-0.7044
+BufferedInputStream/IOStream | 0.7044
 BufferedInputStream/Mmap |  0.7204
 IOBuffer/Mmap |  0.8893
 GZip |  1.622
