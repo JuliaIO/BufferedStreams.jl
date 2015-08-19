@@ -35,12 +35,12 @@ end
 
 
 # Resize the buffer. This way we can do IOBuffer-style string-building.
-function writebytes(source::EmptyStreamSource, buffer::Vector{UInt8}, n::Int)
+function writebytes(source::EmptyStreamSource, buffer::Vector{UInt8}, n::Int, eof::Bool)
     # TODO: what happens when we try to resize mmaped data?
     if n >= length(buffer)
         resize!(buffer, max(1024, 2 * length(buffer)))
     end
-    return 0
+    return eof ? n : 0
 end
 
 
