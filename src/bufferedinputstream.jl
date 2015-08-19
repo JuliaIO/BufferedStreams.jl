@@ -120,7 +120,7 @@ function Base.readbytes!(stream::BufferedInputStream,
     outpos = 1
     while !eof(stream) && outpos <= nb
         if stream.position > stream.available && fillbuffer!(stream) < 1
-            throw(EOFError())
+            break
         end
 
         num_chunk_bytes = min(nb - outpos + 1, stream.available - stream.position + 1)
