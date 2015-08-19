@@ -125,7 +125,8 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
             stream.position = stream.available + 1
             nb = fillbuffer!(stream)
             if nb == 0
-                break
+                chunk = stream.buffer[upanchor!(stream):stream.position-1]
+                return chunk
             end
         end
     end
@@ -134,7 +135,7 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
     return chunk
 end
 
-# TODO: specialization for IOStream that gets the filesize?
+
 function Base.readbytes!(stream::BufferedInputStream,
                          buffer::AbstractArray{Uint8}, nb=length(buffer))
     oldbuflen = buflen = length(buffer)
