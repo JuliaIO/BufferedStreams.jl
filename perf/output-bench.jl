@@ -13,7 +13,7 @@ const methods = [
     ("IOBuffer",                      () -> IOBuffer()),
     ("GZip",                          () -> GZip.gzopen("/dev/null", "w")),
     ("Zlib",                          () -> Zlib.Writer(open("/dev/null", "w"))),
-    ("Libz",                          () -> Libz.ZlibOutputStream(open("/dev/null", "w"))),
+    ("Libz",                          () -> Libz.ZlibOutputDeflateStream(open("/dev/null", "w"))),
 ]
 
 

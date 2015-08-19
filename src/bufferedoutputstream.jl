@@ -104,9 +104,6 @@ end
 
 function Base.close(stream::BufferedOutputStream)
     flushbuffer!(stream, true)
-    if stream.position > 1
-        error("BufferedOutputStream sink failed to write all data")
-    end
 end
 
 

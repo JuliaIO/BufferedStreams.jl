@@ -17,8 +17,8 @@ const methods = [
     ("IOBuffer/Mmap",                 () -> IOBuffer(Mmap.mmap(open(filename), Vector{UInt8}, (filesize(filename),)))),
     ("GZip",                          () -> GZip.gzopen(gzfilename)),
     ("Zlib",                          () -> Zlib.Reader(open(gzfilename))),
-    ("Libz",                          () -> Libz.ZlibInputStream(open(gzfilename))),
-    ("Libz/Mmap",                     () -> Libz.ZlibInputStream(
+    ("Libz",                          () -> Libz.ZlibInputDeflateStream(open(gzfilename))),
+    ("Libz/Mmap",                     () -> Libz.ZlibInputDeflateStream(
                                                  Mmap.mmap(open(gzfilename), Vector{UInt8}, (filesize(gzfilename),)))),
     ("GZBufferedStream",              () -> GZBufferedStream(gzopen(gzfilename))),
     ("gzip/Pipe",                     () -> open(`gzip -cd $gzfilename`)[1]),

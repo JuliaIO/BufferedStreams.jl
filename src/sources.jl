@@ -40,7 +40,7 @@ function writebytes(source::EmptyStreamSource, buffer::Vector{UInt8}, n::Int, eo
     if n >= length(buffer)
         resize!(buffer, max(1024, 2 * length(buffer)))
     end
-    return eof ? n : 0
+    return 0
 end
 
 
