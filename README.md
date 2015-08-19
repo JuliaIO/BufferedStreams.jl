@@ -20,8 +20,8 @@ these should provide a vague idea of performance.
 
 Note: gzip/libz/zlib are reading and decompressing gzipped data
 
- readbytes | time (in seconds)
------------|--------------------
+ read array | time (in seconds)
+------------|--------------------
 IOStream |  0.0459
 BufferedInputStream/IOStream |  0.2096
 BufferedInputStream/Mmap |  0.1488
@@ -48,8 +48,8 @@ GZBufferedStream |  0.4702
 Pipe/gzip |  56.6504
 
 
- readline | time (in seconds)
-----------|--------------------
+ read line | time (in seconds)
+-----------|--------------------
 IOStream |  0.6803
 BufferedInputStream/IOStream |
 0.7044
@@ -59,8 +59,7 @@ GZip |  1.622
 Zlib |  3.68
 Libz |  0.9922
 Libz/Mmap |  1.0185
-GZBufferedStream |
-2.5571
+GZBufferedStream | 2.5571
 Pipe/gzip |  2.3483
 
 
