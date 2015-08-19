@@ -3,7 +3,7 @@
 BufferedInputStream{T} provides buffered reading from a source of type T.
 
 Any type T wrapped in a BufferedInputStream must implement:
-    readbytes!(source::T, buffer::Vector{Uint8}, from::Int, to::Int)
+    readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
 
 This function should:
     * refill the buffer starting at `from` and not filling past `to`.
@@ -25,14 +25,11 @@ type BufferedInputStream{T} <: IO
     # If positive, preserve and move buffer[anchor:available] when refilling
     # the buffer.
     anchor::Int
-
-    # True if the source has no more available input.
-    source_finished::Bool
 end
 
 
 function BufferedInputStream{T}(source::T, buflen::Int=100000)
-    return BufferedInputStream{T}(source, Array(Uint8, buflen), 1, 0, 0, false)
+    return BufferedInputStream{T}(source, Array(UInt8, buflen), 1, 0, 0)
 end
 
 
@@ -63,9 +60,6 @@ function fillbuffer!(stream::BufferedInputStream)
     nb = readbytes!(stream.source, stream.buffer, keeplen + 1, buflen)
     stream.available = nb + keeplen
 
-    if nb == 0
-        stream.source_finished = true
-    end
     return nb
 end
 
@@ -121,7 +115,7 @@ end
 
 
 function Base.readbytes!(stream::BufferedInputStream,
-                         buffer::AbstractArray{Uint8}, nb=length(buffer))
+                         buffer::AbstractArray{UInt8}, nb=length(buffer))
     oldbuflen = buflen = length(buffer)
     outpos = 1
     while !eof(stream) && outpos <= nb

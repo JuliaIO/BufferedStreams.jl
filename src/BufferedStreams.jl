@@ -2,6 +2,7 @@
 module BufferedStreams
 
 export BufferedInputStream,
+       BufferedOutputStream,
        EmptyStreamSource,
        fillbuffer!,
        anchor!,
@@ -10,6 +11,7 @@ export BufferedInputStream,
 
 
 include("bufferedinputstream.jl")
+include("bufferedoutputstream.jl")
 include("sources.jl")
 
 

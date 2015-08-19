@@ -9,7 +9,6 @@ using BufferedStreams, FactCheck
 #   * Similar, we manually set the buffer size to be smaller than the default to
 #     force more buffer refills.
 
-
 facts("BufferedInputStream") do
     context("readbytes") do
         data = rand(UInt8, 1000000)
@@ -59,7 +58,7 @@ facts("BufferedInputStream") do
         @fact num_zeros == true_num_zeros --> true
     end
 
-    context("Array") do
+    context("arrays") do
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(data)
         read_data = UInt8[]
@@ -70,7 +69,7 @@ facts("BufferedInputStream") do
         @fact data == readbytes(BufferedInputStream(data)) --> true
     end
 
-    context("Anchors") do
+    context("anchors") do
         data = rand(UInt8, 100000)
 
         function random_range(n)
@@ -102,5 +101,31 @@ facts("BufferedInputStream") do
     end
 end
 
+
+facts("BufferedOutputStream") do
+    context("write") do
+        data = rand(UInt8, 1000000)
+        sink = IOBuffer()
+        stream = BufferedOutputStream(sink, 1024)
+        for c in data
+            write(stream, c)
+        end
+        close(stream)
+
+        @fact takebuf_array(sink) == data --> true
+    end
+
+    context("arrays") do
+        iobuf = IOBuffer()
+        stream = BufferedOutputStream()
+        for _ in 1:1000
+            data = rand(UInt8, rand(1:1000))
+            write(iobuf, data)
+            write(stream, data)
+        end
+
+        @fact takebuf_array(stream) == takebuf_array(iobuf) --> true
+    end
+end
 
 
