@@ -1,39 +1,92 @@
 
+# BufferedStreams
 
-Current benchmarks:
-```
-readbytes
-  IOStream:  0.0403
-  BufferedInputStream/IOStream:  0.1712
-  BufferedInputStream/Mmap:  0.1249
-  IOBuffer/Mmap:  0.1264
-  GZip:  25.3236
-  Zlib:  0.5346
-  Libz:  0.4877
-  Libz/Mmap:  0.4101
-  GZBufferedStream:  0.9356
-  gzip/Pipe:  0.4715
-read
-  IOStream:  1.2506
-  BufferedInputStream/IOStream:  0.3198
-  BufferedInputStream/Mmap:  0.0819
-  IOBuffer/Mmap:  0.1285
-  GZip:  25.2019
-  Zlib:  5.4423
-  Libz:  0.3696
-  Libz/Mmap:  0.3483
-  GZBufferedStream:  0.4203
-  gzip/Pipe:  51.164
-readline
-  IOStream:  0.5557
-  BufferedInputStream/IOStream:  0.6189
-  BufferedInputStream/Mmap:  0.6264
-  IOBuffer/Mmap:  0.8086
-  GZip:  1.4491
-  Zlib:  3.3276
-  Libz:  0.8642
-  Libz/Mmap:  0.8367
-  GZBufferedStream:  2.3063
-  gzip/Pipe:  1.9607
-```
+BufferedStreams provides buffering for IO operations. You can think of it as a
+alterative IO system in which many things are magically faster.
+
+[Libz.jl](https://github.com/dcjones/Libz.jl) is the initial application, but
+the same interface can be used to implement fast IO for a variety of sources and
+sinks.
+
+This is still somewhat experimental. More exposition to come.
+
+# Benchmarks
+
+See `perf/input-bench.jl` and `perf/output-bench.jl`. These are somewhat
+unscientific. IO benchmarks in particular can vary a lot from run to run, but
+these should provide a vague idea of performance.
+
+## Reading
+
+Note: gzip/libz/zlib are reading and decompressing gzipped data
+
+ readbytes | time (in seconds)
+-----------|--------------------
+IOStream |  0.0459
+BufferedInputStream/IOStream |  0.2096
+BufferedInputStream/Mmap |  0.1488
+IOBuffer/Mmap |  0.1504
+GZip |  27.0333
+Zlib |  0.6128
+Libz |  0.5517
+Libz/Mmap |  0.5465
+GZBufferedStream |  0.996
+Pipe/gzip |  0.5
+
+
+ read bytes | time (in seconds)
+------------|---------------------
+IOStream |  1.3757
+BufferedInputStream/IOStream |  0.3433
+BufferedInputStream/Mmap |  0.0931
+IOBuffer/Mmap |  0.1365
+GZip |  27.4463
+Zlib |  6.0401
+Libz |  0.4414
+Libz/Mmap |  0.4458
+GZBufferedStream |  0.4702
+Pipe/gzip |  56.6504
+
+
+ readline | time (in seconds)
+----------|--------------------
+IOStream |  0.6803
+BufferedInputStream/IOStream |
+0.7044
+BufferedInputStream/Mmap |  0.7204
+IOBuffer/Mmap |  0.8893
+GZip |  1.622
+Zlib |  3.68
+Libz |  0.9922
+Libz/Mmap |  1.0185
+GZBufferedStream |
+2.5571
+Pipe/gzip |  2.3483
+
+
+## Writing
+
+Note: gzip/libz/zlib are writing and compressing the data
+
+ write bytes | time (in seconds)
+-------------|--------------------
+IOStream | 2.4753
+BufferedOutputStream/IOStream |  1.0234
+BufferedOutputStream |  1.2023
+IOBuffer |  3.3693
+GZip |  19.5671
+Zlib |  80.3204
+Libz |  13.3319
+
+
+ write array | time (in seconds)
+------------| ------------------
+IOStream |  0.0794
+BufferedOutputStream/IOStream |  0.071
+BufferedOutputStream |  0.116
+IOBuffer |  0.0959
+GZip |  12.2057
+Zlib |  48.1427
+Libz |  12.2098
+
 

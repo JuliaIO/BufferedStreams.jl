@@ -4,16 +4,22 @@ import BufferedStreams, Zlib, GZip, Libz
 # Source:
 # ftp://ftp.ensembl.org/pub/release-81/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz
 const filename = "Homo_sapiens.GRCh38.cds.all.fa"
+
+# this just tests overhead, but IOStream has an advantage since knows it's a
+# nop.
+#const output_filename = "/dev/null"
+const output_filename = "out.tmp"
+
 const data = readall(open(filename))
 
 const methods = [
-    ("IOStream",                      () -> open("/dev/null", "w")),
-    ("BufferedOutputStream/IOStream", () -> BufferedStreams.BufferedOutputStream(open("/dev/null", "w"))),
+    ("IOStream",                      () -> open(output_filename, "w")),
+    ("BufferedOutputStream/IOStream", () -> BufferedStreams.BufferedOutputStream(open(output_filename, "w"))),
     ("BufferedOutputStream",          () -> BufferedStreams.BufferedOutputStream()),
     ("IOBuffer",                      () -> IOBuffer()),
-    ("GZip",                          () -> GZip.gzopen("/dev/null", "w")),
-    ("Zlib",                          () -> Zlib.Writer(open("/dev/null", "w"))),
-    ("Libz",                          () -> Libz.ZlibOutputDeflateStream(open("/dev/null", "w"))),
+    ("GZip",                          () -> GZip.gzopen(output_filename, "w")),
+    ("Zlib",                          () -> Zlib.Writer(open(output_filename, "w"))),
+    ("Libz",                          () -> Libz.ZlibDeflateOutputStream(open(output_filename, "w"))),
 ]
 
 

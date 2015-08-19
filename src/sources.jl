@@ -68,21 +68,35 @@ end
 # IO source
 # ---------
 
+#function Base.readbytes!(source::IO, buffer::Vector{UInt8}, from::Int, to::Int)
+    #i = from
+    #while i <= to && !eof(source)
+        #@inbounds buffer[i] = read(source, Uint8)
+        #i += 1
+    #end
+    #return i - from
+#end
+
+
+#function writebytes(source::IO, buffer::Vector{UInt8}, n::Int)
+    #for i in 1:n
+        #write(source, buffer[i])
+    #end
+    #return n
+#end
+
+
+# Sketchier versions of the above. This let's us leverage bulk reads and writes
+# if the source supports it.
+
 function Base.readbytes!(source::IO, buffer::Vector{UInt8}, from::Int, to::Int)
-    i = from
-    while i <= to && !eof(source)
-        @inbounds buffer[i] = read(source, Uint8)
-        i += 1
-    end
-    return i - from
+    nb = readbytes!(source, pointer_to_array(pointer(buffer, from)), to - from + 1)
+    return nb
 end
 
 
 function writebytes(source::IO, buffer::Vector{UInt8}, n::Int)
-    for i in 1:n
-        write(source, buffer[i])
-    end
-    return n
+    return write(source, pointer_to_array(pointer(buffer), (n,)))
 end
 
 
