@@ -73,6 +73,22 @@ end
 
 
 """
+Return the next byte from the input stream without advancing the position.
+"""
+@inline function peek(stream::BufferedInputStream)
+    position = stream.position
+    if position > stream.available
+        if fillbuffer!(stream) < 1
+            throw(EOFError())
+        end
+        position = stream.position
+    end
+    @inbounds c = stream.buffer[position]
+    return c
+end
+
+
+"""
 Read and return one byte from the input stream.
 """
 @inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
@@ -103,7 +119,7 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
             stream.position = stream.available + 1
             nb = fillbuffer!(stream)
             if nb == 0
-                chunk = stream.buffer[upanchor!(stream):stream.position-1]
+                chunk = takeanchored!(stream)
                 return chunk
             end
         end
@@ -169,14 +185,14 @@ end
 
 
 """
-Copy and return a byte array from the anchor to the current position, also
-removing the anchor.
+Copy and return a byte array from the anchor up to, but not including the
+current position, also removing the anchor.
 """
 function takeanchored!(stream::BufferedInputStream)
-    if stream.position > stream.available
+    if stream.position - 1 > stream.available
         throw(EOFError())
     end
-    chunk = stream.buffer[stream.anchor:stream.position]
+    chunk = stream.buffer[stream.anchor:stream.position - 1]
     stream.anchor = 0
     return chunk
 end

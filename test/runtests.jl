@@ -88,7 +88,7 @@ facts("BufferedInputStream") do
                 if i == r.start
                     anchor!(stream)
                 end
-                if i == r.stop
+                if i == r.stop + 1
                     return takeanchored!(stream) == data[r]
                 end
                 read(stream, Uint8)

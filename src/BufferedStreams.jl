@@ -4,6 +4,7 @@ module BufferedStreams
 export BufferedInputStream,
        BufferedOutputStream,
        EmptyStreamSource,
+       peek,
        fillbuffer!,
        isanchored,
        anchor!,

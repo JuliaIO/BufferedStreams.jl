@@ -45,12 +45,16 @@ buffer.
 # print all numbers literals from a stream
 stream = BufferedInputStream(source)
 while !eof(stream)
-    b = read(stream, UInt8)
-    if '1' <= b <= '9' && !isanchored(stream)
-        anchor!(stream)
+    b = peek(stream)
+    if '1' <= b <= '9'
+        if !isanchored(stream)
+            anchor!(stream)
+        end
     elseif isanchored(stream)
         println(ASCIIString(takeanchored!(stream)))
     end
+
+    read(stream, UInt8)
 end
 ```
 
