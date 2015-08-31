@@ -1,6 +1,9 @@
 
 [![Diagram of locks](https://biojulia.github.io/BufferedStreams.jl/locks.gif)](http://www.pc.gc.ca/eng/lhn-nhs/qc/annedebellevue/natcul/natcul2/b.aspx)
 
+[![Build Status](https://travis-ci.org/BioJulia/BufferedStreams.jl.svg?branch=master)](https://travis-ci.org/BioJulia/BufferedStreams.jl)
+[![codecov.io](http://codecov.io/github/BioJulia/BufferedStreams.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/BufferedStreams.jl?branch=master)
+
 BufferedStreams provides buffering for IO operations. It can wrap any IO type
 automatically making incremental reading and writing faster.
 
