@@ -69,7 +69,7 @@ function Base.takebuf_array(stream::BufferedOutputStream{EmptyStreamSource})
 end
 
 
-function takebuf_string(stream::BufferedOutputStream{EmptyStreamSource})
+function Base.takebuf_string(stream::BufferedOutputStream{EmptyStreamSource})
     chunk = takebuf_array(stream)
     return isvalid(ASCIIString, chunk) ? ASCIIString(chunk) : UTF8String(chunk)
 end

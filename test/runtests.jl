@@ -143,6 +143,18 @@ facts("BufferedOutputStream") do
 
         @fact takebuf_array(stream) == takebuf_array(iobuf) --> true
     end
+
+    context("takebuf_string") do
+        data = rand('A':'z', 1000000)
+        iobuf = IOBuffer()
+        stream = BufferedOutputStream()
+        for c in data
+            write(stream, c)
+            write(iobuf, c)
+        end
+
+        @fact takebuf_string(stream) == takebuf_string(iobuf) --> true
+    end
 end
 
 
