@@ -174,3 +174,35 @@ function takeanchored!(stream::BufferedInputStream)
 end
 
 
+"""
+Current position in the stream. Assumes the source has reportable position.
+"""
+function Base.position(stream::BufferedInputStream)
+    return position(stream.source) + stream.position - 1
+end
+
+
+"""
+Move to the given position in the stream.
+
+This will unset the current anchor if any.
+"""
+function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
+    if applicable(seek, reader.source, pos)
+        upanchor!(stream.source)
+        source_position = position(stream.source)
+        # is the new position within the buffer?
+        if source_position - stream.available <= pos <= source_position
+            stream.position = 1 + pos - (source_position - stream.available)
+        else
+            seek(reader.source, pos)
+            reader.position = 1
+            source.available = 0
+        end
+    else
+        error("Can't seek in input stream with source of type ", T)
+        # TODO: Allow seeking forwards by just reading and discarding input
+    end
+end
+
+

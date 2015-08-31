@@ -17,6 +17,21 @@ array without additional buffering.
 immutable EmptyStreamSource end
 
 
+function Base.position(source::EmptyStreamSource)
+    return 0
+end
+
+
+function Base.seek(stream::BufferedInputStream{EmptyStreamSource}, pos::Integer)
+    upanchor!(stream)
+    if 1 <= pos + 1 <= stream.available
+        stream.position = pos + 1
+    else
+        throw(BoundsError)
+    end
+end
+
+
 function Base.readbytes!(source::EmptyStreamSource, buffer::Vector{UInt8},
                          from::Int, to::Int)
     return 0
@@ -90,7 +105,9 @@ end
 # if the source supports it.
 
 function Base.readbytes!(source::IO, buffer::Vector{UInt8}, from::Int, to::Int)
-    nb = readbytes!(source, pointer_to_array(pointer(buffer, from)), to - from + 1)
+    nb = readbytes!(source,
+        pointer_to_array(pointer(buffer, from), (to - from + 1,)),
+        to - from + 1)
     return nb
 end
 
