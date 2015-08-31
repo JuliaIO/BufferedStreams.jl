@@ -17,8 +17,8 @@ array without additional buffering.
 immutable EmptyStreamSource end
 
 
-function Base.position(source::EmptyStreamSource)
-    return 0
+function Base.position(stream::BufferedInputStream{EmptyStreamSource})
+    return stream.position - 1
 end
 
 
