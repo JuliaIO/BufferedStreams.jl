@@ -1,9 +1,6 @@
 
 [![Diagram of locks](https://biojulia.github.io/BufferedStreams.jl/locks.gif)](http://www.pc.gc.ca/eng/lhn-nhs/qc/annedebellevue/natcul/natcul2/b.aspx)
 
-[![Build Status](https://travis-ci.org/BioJulia/BufferedStreams.jl.svg?branch=master)](https://travis-ci.org/BioJulia/BufferedStreams.jl)
-[![codecov.io](http://codecov.io/github/BioJulia/BufferedStreams.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/BufferedStreams.jl?branch=master)
-
 BufferedStreams provides buffering for IO operations. It can wrap any IO type
 automatically making incremental reading and writing faster.
 
@@ -32,12 +29,12 @@ you can use it like any other `IO` type.
 
 Input streams also have some tricks to make parsing applications easier. When
 parsing data incrementally, one must take care that partial matches are
-preverves across buffer refills. One easy way to do this is to copy it to a
+preverved across buffer refills. One easy way to do this is to copy it to a
 temporary buffer, but this unecessary copying can slow things down.
 
-Input streams instead support the notion of "anchoring", will instructs the
-stream to save the current position in the buffer. If the buffer gets refilled
-the any data in the buffer including or following that position gets shifted
+Input streams instead support the notion of "anchoring", which instructs the
+stream to save the current position in the buffer. If the buffer gets refilled,
+then any data in the buffer including or following that position gets shifted
 over to make room. When the match is finished, one can then call `takeanchored!`
 return an array of the bytes from the anchored position to the currened
 position, or `upanchor!` to return the index of the anchored position in the
