@@ -1,5 +1,5 @@
 
-![Diagram of locks](https://biojulia.github.io/BufferedStreams.jl/locks.gif)
+[![Diagram of locks](https://biojulia.github.io/BufferedStreams.jl/locks.gif)](http://www.pc.gc.ca/eng/lhn-nhs/qc/annedebellevue/natcul/natcul2/b.aspx)
 
 BufferedStreams provides buffering for IO operations. It can wrap any IO type
 automatically making incremental reading and writing faster.
