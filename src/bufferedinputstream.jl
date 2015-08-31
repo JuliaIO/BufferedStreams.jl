@@ -143,6 +143,14 @@ end
 
 
 """
+Return true if the stream is anchored.
+"""
+function isanchored(stream::BufferedInputStream)
+    return stream.anchor != 0
+end
+
+
+"""
 Set the buffer's anchor to its current position.
 """
 function anchor!(stream::BufferedInputStream)

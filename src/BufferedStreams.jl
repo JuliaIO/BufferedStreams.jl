@@ -5,6 +5,7 @@ export BufferedInputStream,
        BufferedOutputStream,
        EmptyStreamSource,
        fillbuffer!,
+       isanchored,
        anchor!,
        upanchor!,
        takeanchored!

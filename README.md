@@ -1,90 +1,91 @@
 
 # BufferedStreams
 
-BufferedStreams provides buffering for IO operations. You can think of it as a
-alterative IO system in which many things are magically faster.
+BufferedStreams provides buffering for IO operations. It can wrap any IO type
+automatically making incremental reading and writing faster.
 
-[Libz.jl](https://github.com/dcjones/Libz.jl) is the initial application, but
-the same interface can be used to implement fast IO for a variety of sources and
-sinks.
+# BufferedInputStream
 
-This is still somewhat experimental. More exposition to come.
+```julia
+BufferedInputStream(open(filename)) # wrap an IOStream
+BufferedInputStream(rand(UInt8, 100)) # wrap a byte array
+```
 
-# Benchmarks
+`BufferedInputStream` wraps a source. A source can be any `IO` object, but more
+specifically it can be any type `T` that implements a function
 
-See `perf/input-bench.jl` and `perf/output-bench.jl`. These are somewhat
-unscientific. IO benchmarks in particular can vary a lot from run to run, but
-these should provide a vague idea of performance.
+```julia
+readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
+```
 
-## Reading
+This function should write new data to `buffer` starting at position `from` and
+not exceeding position `to` and return the number of bytes written.
 
-Note: gzip/libz/zlib are reading and decompressing gzipped data
-
- read array | time (in seconds)
-------------|--------------------
-IOStream |  0.0459
-BufferedInputStream/IOStream |  0.2096
-BufferedInputStream/Mmap |  0.1488
-IOBuffer/Mmap |  0.1504
-GZip |  27.0333
-Zlib |  0.6128
-Libz |  0.5517
-Libz/Mmap |  0.5465
-GZBufferedStream |  0.996
-Pipe/gzip |  0.5
+`BufferedInputStream` is itself an `IO` type and implements the source type so
+you can use it like any other `IO` type.
 
 
- read bytes | time (in seconds)
-------------|---------------------
-IOStream |  1.3757
-BufferedInputStream/IOStream |  0.3433
-BufferedInputStream/Mmap |  0.0931
-IOBuffer/Mmap |  0.1365
-GZip |  27.4463
-Zlib |  6.0401
-Libz |  0.4414
-Libz/Mmap |  0.4458
-GZBufferedStream |  0.4702
-Pipe/gzip |  56.6504
+## Anchors
+
+Input streams also have some tricks to make parsing applications easier. When
+parsing data incrementally, one must take care that partial matches are
+preverves across buffer refills. One easy way to do this is to copy it to a
+temporary buffer, but this unecessary copying can slow things down.
+
+Input streams instead support the notion of "anchoring", will instructs the
+stream to save the current position in the buffer. If the buffer gets refilled
+the any data in the buffer including or following that position gets shifted
+over to make room. When the match is finished, one can then call `takeanchored!`
+return an array of the bytes from the anchored position to the currened
+position, or `upanchor!` to return the index of the anchored position in the
+buffer.
 
 
- read line | time (in seconds)
------------|--------------------
-IOStream |  0.6803
-BufferedInputStream/IOStream | 0.7044
-BufferedInputStream/Mmap |  0.7204
-IOBuffer/Mmap |  0.8893
-GZip |  1.622
-Zlib |  3.68
-Libz |  0.9922
-Libz/Mmap |  1.0185
-GZBufferedStream | 2.5571
-Pipe/gzip |  2.3483
+```julia
+# print all numbers literals from a stream
+stream = BufferedInputStream(source)
+while !eof(stream)
+    b = read(stream, UInt8)
+    if '1' <= b <= '9' && !isanchored(stream)
+        anchor!(stream)
+    elseif isanchored(stream)
+        println(ASCIIString(takeanchored!(stream)))
+    end
+end
+```
 
 
-## Writing
+# BufferedOutputStream
 
-Note: gzip/libz/zlib are writing and compressing the data
+```julia
+stream = BufferedOutputStream(open(filename, "w")) # wrap an IOStream
+```
 
- write bytes | time (in seconds)
--------------|--------------------
-IOStream | 2.4753
-BufferedOutputStream/IOStream |  1.0234
-BufferedOutputStream |  1.2023
-IOBuffer |  3.3693
-GZip |  19.5671
-Zlib |  80.3204
-Libz |  13.3319
+`BufferedOutputStream` is the converse to `BufferedInputStream`, wrapping a sink
+type. It also works on any writable `IO` type, as well the more specific sink
+interface:
 
 
- write array | time (in seconds)
-------------| ------------------
-IOStream |  0.0794
-BufferedOutputStream/IOStream |  0.071
-BufferedOutputStream |  0.116
-IOBuffer |  0.0959
-GZip |  12.2057
-Zlib |  48.1427
-Libz |  12.2098
+```julia
+writebytes(sink::T, buffer::Vector{UInt8}, n::Int, eof::Bool)
+```
+
+This function should consume the first `n` bytes of `buffer`. The `eof` argument
+is used to indicate that there will be no more input to consume. It should
+return the number of bytes written, which must be `n` or 0. A return value of 0
+indicates data was processed but should not be evicted from the buffer.
+
+
+## `BufferedOutputStream` as an alternative to `IOBuffer`
+
+`BufferedOutputStream` can be used as a simpler and often faster alternative to
+`IOBuffer` for incrementally building strings.
+
+```julia
+out = IOBuffer()
+print(out, "Hello")
+print(out, " World")
+str = takebuf_string(out)
+```
 
 
