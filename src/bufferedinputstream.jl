@@ -37,6 +37,10 @@ end
 Refill the buffer, optionally moving and retaining part of the data.
 """
 function fillbuffer!(stream::BufferedInputStream)
+    if eof(stream.source)
+        return 0
+    end
+
     oldbuflen = buflen = length(stream.buffer)
     keeplen = 0
     if stream.anchor > 0
@@ -57,7 +61,7 @@ function fillbuffer!(stream::BufferedInputStream)
         stream.position = 1
     end
 
-    nb = readbytes!(stream.source, stream.buffer, keeplen + 1, buflen)
+    nb = Int64(readbytes!(stream.source, stream.buffer, keeplen + 1, buflen))
     stream.available = nb + keeplen
 
     return nb
@@ -85,6 +89,26 @@ Return the next byte from the input stream without advancing the position.
     end
     @inbounds c = stream.buffer[position]
     return c
+end
+
+
+"""
+Advance the stream forward by n bytes.
+"""
+@inline function seekforward(stream::BufferedInputStream, n::Integer)
+    if n < 0
+        error("n must be positive in seekforward")
+    end
+
+    while stream.position + n > stream.available
+        n -= stream.available - stream.position + 1
+        stream.position = stream.available + 1
+        if fillbuffer!(stream) < 1
+            throw(EOFError())
+        end
+    end
+    stream.position += n
+    return n
 end
 
 

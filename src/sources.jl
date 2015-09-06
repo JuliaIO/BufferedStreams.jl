@@ -44,8 +44,12 @@ end
 
 
 function BufferedInputStream(data::Vector{UInt8})
-    return BufferedInputStream{EmptyStreamSource}(EmptyStreamSource(), data, 1,
-                                                  length(data), 0)
+    return BufferedInputStream{EmptyStreamSource}(EmptyStreamSource(), data, 1, length(data), 0)
+end
+
+
+function BufferedInputStream(data::Vector{UInt8}, len::Integer)
+    return BufferedInputStream{EmptyStreamSource}(EmptyStreamSource(), data, 1, len, 0)
 end
 
 
@@ -53,9 +57,21 @@ end
 function writebytes(source::EmptyStreamSource, buffer::Vector{UInt8}, n::Int, eof::Bool)
     # TODO: what happens when we try to resize mmaped data?
     if n >= length(buffer)
-        resize!(buffer, max(1024, 2 * length(buffer)))
+        resize!(buffer, max(n, max(1024, 2 * length(buffer))))
     end
     return 0
+end
+
+
+# Faster append for vector-backed output streams.
+@inline function Base.append!(stream::BufferedOutputStream{EmptyStreamSource},
+                              data::Vector{UInt8}, start::Int, stop::Int)
+    n = stop - start + 1
+    if stream.position + n > length(stream.buffer)
+        resize!(stream.buffer, max(n, max(1024, 2 * length(stream.buffer))))
+    end
+    copy!(stream.buffer, stream.position, data, start, n)
+    stream.position += n
 end
 
 
@@ -77,6 +93,32 @@ end
 
 function BufferedOutputStream()
     return BufferedOutputStream{EmptyStreamSource}(EmptyStreamSource(), Array(UInt8, 1024), 1)
+end
+
+
+function Base.empty!(stream::BufferedOutputStream{EmptyStreamSource})
+    stream.position = 1
+end
+
+
+function Base.isempty(stream::BufferedOutputStream{EmptyStreamSource})
+    return stream.position == 1
+end
+
+
+function Base.length(stream::BufferedOutputStream{EmptyStreamSource})
+    return stream.position - 1
+end
+
+
+function Base.(:(==))(a::BufferedOutputStream{EmptyStreamSource},
+                      b::BufferedOutputStream{EmptyStreamSource})
+    if a.position == b.position
+        return ccall(:memcmp, Cint, (Ptr{Void}, Ptr{Void}, Csize_t),
+                     a.buffer, b.buffer, a.position - 1) == 0
+    else
+        return false
+    end
 end
 
 

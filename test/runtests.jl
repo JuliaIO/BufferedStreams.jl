@@ -101,20 +101,47 @@ facts("BufferedInputStream") do
     end
 
     context("seek") do
+        n = 100000
+        data = rand(UInt8, n)
+        positions = rand(0:n-1, 1000)
+
         function test_seek(stream, p)
             seek(stream, p)
             return position(stream) == p && read(stream, UInt8) == data[p + 1]
         end
-
-        n = 100000
-        data = rand(UInt8, n)
-        positions = rand(0:n-1, 1000)
 
         stream = BufferedInputStream(data)
         @fact all(Bool[test_seek(stream, position) for position in positions]) --> true
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
         @fact all(Bool[test_seek(stream, position) for position in positions]) --> true
+    end
+
+    context("seekforward") do
+        n = 100000
+        data = rand(UInt8, n)
+        positions = rand(0:n-1, 1000)
+        sort!(positions)
+
+        last = 1
+        offsets = Int[]
+        for position in positions
+            push!(offsets, position - last)
+            last = position
+        end
+
+        function test_seekforward(stream, position, offset)
+            seekforward(stream, offset)
+            peek(stream) == data[position]
+        end
+
+        stream = BufferedInputStream(IOBuffer(data), 1024)
+        @fact_throws seekforward(stream, n + 1)
+        @fact_throws seekforward(stream, -1)
+
+        stream = BufferedInputStream(IOBuffer(data), 1024)
+        @fact all(Bool[test_seekforward(stream, position, offset)
+                       for (position, offset) in zip(positions, offsets)]) --> true
     end
 end
 

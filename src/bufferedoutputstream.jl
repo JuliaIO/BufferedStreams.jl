@@ -19,6 +19,7 @@ written but do so lazily or asynchronously.
 """
 type BufferedOutputStream{T} <: IO
     sink::T
+
     buffer::Vector{UInt8}
 
     # Position of the next unused byte in buffer
@@ -70,12 +71,20 @@ Write a byte array.
 """
 function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
+    append!(stream, data, 1, length(data))
+end
 
+
+# TODO: This is too slow. I think this pointer/pointer_to_array trick may
+# allocate, so we should try to avoid it everywhere, but especially here.
+"""
+Write part of a byte array.
+"""
+function Base.append!(stream::BufferedOutputStream, data::Vector{UInt8},
+                      start::Int, stop::Int)
     buffer = stream.buffer
     position = stream.position
-    datalen = length(data)
     buflen = length(buffer)
-    written = 0
     while true
         if position > buflen
             stream.position = position
@@ -85,11 +94,11 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
             buflen = length(buffer)
         end
 
-        num_chunk_bytes = min(datalen - written, buflen - position + 1)
-        copy!(buffer, position, data, written + 1, num_chunk_bytes)
-        written += num_chunk_bytes
+        num_chunk_bytes = min(stop - start + 1, buflen - position + 1)
+        copy!(buffer, position, data, start, num_chunk_bytes)
+        start += num_chunk_bytes
         position += num_chunk_bytes
-        if written >= datalen
+        if start > stop
             break
         end
     end
@@ -106,5 +115,3 @@ function Base.close(stream::BufferedOutputStream)
     flushbuffer!(stream, true)
 end
 
-
-# TODO: writing arrays
