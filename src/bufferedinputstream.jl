@@ -95,12 +95,13 @@ end
 """
 Advance the stream forward by n bytes.
 """
-@inline function seekforward(stream::BufferedInputStream, n::Integer)
+@inline function seekforward(stream::BufferedInputStream, n_::Integer)
+    n = convert(Int, n_)
     if n < 0
         error("n must be positive in seekforward")
     end
 
-    while stream.position + n > stream.available
+    while stream.position + n > stream.available + 1
         n -= stream.available - stream.position + 1
         stream.position = stream.available + 1
         if fillbuffer!(stream) < 1
