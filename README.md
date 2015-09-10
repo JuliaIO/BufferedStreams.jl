@@ -89,7 +89,7 @@ indicates data was processed but should not be evicted from the buffer.
 `IOBuffer` for incrementally building strings.
 
 ```julia
-out = IOBuffer()
+out = BufferedOutputStream()
 print(out, "Hello")
 print(out, " World")
 str = takebuf_string(out)
