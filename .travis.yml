@@ -7,4 +7,4 @@ julia:
 notifications:
   email: false
 after_success:
-- julia -e 'cd(Pkg.dir("MyPkg")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+- julia -e 'cd(Pkg.dir("BufferedStreams")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
