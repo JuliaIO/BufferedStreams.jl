@@ -27,7 +27,7 @@ type BufferedOutputStream{T} <: IO
 end
 
 
-function BufferedOutputStream{T}(sink::T, buflen::Int=100000)
+function BufferedOutputStream{T}(sink::T, buflen::Integer=100000)
     return BufferedOutputStream{T}(sink, Array(UInt8, buflen), 1)
 end
 

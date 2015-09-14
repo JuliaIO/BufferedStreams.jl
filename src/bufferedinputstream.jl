@@ -28,7 +28,7 @@ type BufferedInputStream{T} <: IO
 end
 
 
-function BufferedInputStream{T}(source::T, buflen::Int=100000)
+function BufferedInputStream{T}(source::T, buflen::Integer=100000)
     return BufferedInputStream{T}(source, Array(UInt8, buflen), 1, 0, 0)
 end
 
