@@ -163,7 +163,7 @@ end
 # ---------------
 
 function Base.readbytes!(source::IOStream, buffer::Vector{UInt8}, from::Int, to::Int)
-    return ccall(:ios_readall, Uint, (Ptr{Void}, Ptr{Void}, Uint), source.ios,
+    return ccall(:ios_readall, UInt, (Ptr{Void}, Ptr{Void}, UInt), source.ios,
                  pointer(buffer, from), to - from + 1)
 end
 

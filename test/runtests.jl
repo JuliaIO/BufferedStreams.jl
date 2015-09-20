@@ -91,7 +91,7 @@ facts("BufferedInputStream") do
                 if i == r.stop + 1
                     return takeanchored!(stream) == data[r]
                 end
-                read(stream, Uint8)
+                read(stream, UInt8)
                 i += 1
             end
             error("nothing extracted")
