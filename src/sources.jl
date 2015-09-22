@@ -143,10 +143,8 @@ end
 #end
 
 
-# Sketchier versions of the above. This let's us leverage bulk reads and writes
-# if the source supports it.
-
-function Base.readbytes!(source::IO, buffer::Vector{UInt8}, from::Int, to::Int)
+# Source and sink interface for generic IO types
+function Base.readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int)
     nb = readbytes!(source,
         pointer_to_array(pointer(buffer, from), (to - from + 1,)),
         to - from + 1)
@@ -154,16 +152,17 @@ function Base.readbytes!(source::IO, buffer::Vector{UInt8}, from::Int, to::Int)
 end
 
 
-function writebytes(source::IO, buffer::Vector{UInt8}, n::Int)
+function writebytes(source::IO, buffer::AbstractArray{UInt8}, n::Int)
     return write(source, pointer_to_array(pointer(buffer), (n,)))
 end
+
 
 
 # IOStream source
 # ---------------
 
-function Base.readbytes!(source::IOStream, buffer::Vector{UInt8}, from::Int, to::Int)
-    return ccall(:ios_readall, UInt, (Ptr{Void}, Ptr{Void}, UInt), source.ios,
+function Base.readbytes!(source::IOStream, buffer::AbstractArray{UInt8}, from::Int, to::Int)
+    return ccall(:ios_readall, Uint, (Ptr{Void}, Ptr{Void}, UInt), source.ios,
                  pointer(buffer, from), to - from + 1)
 end
 

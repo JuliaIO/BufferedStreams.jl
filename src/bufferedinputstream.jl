@@ -96,9 +96,9 @@ end
 Advance the stream forward by n bytes.
 """
 @inline function seekforward(stream::BufferedInputStream, n_::Integer)
-    n = convert(Int, n_)
+    n0 = n = convert(Int, n_)
     if n < 0
-        error("n must be positive in seekforward")
+        error("n must be non-negative in seekforward")
     end
 
     while stream.position + n > stream.available + 1
@@ -109,7 +109,7 @@ Advance the stream forward by n bytes.
         end
     end
     stream.position += n
-    return n
+    return n0
 end
 
 
@@ -156,30 +156,39 @@ end
 
 
 function Base.readbytes!(stream::BufferedInputStream,
-                         buffer::AbstractArray{UInt8}, nb=length(buffer))
+                         buffer::AbstractArray{UInt8},
+                         nb=length(buffer))
+    return readbytes!(stream, buffer, 1, nb)
+end
+
+
+function Base.readbytes!(stream::BufferedInputStream,
+                         buffer::AbstractArray{UInt8},
+                         from::Int,
+                         to::Int)
     oldbuflen = buflen = length(buffer)
-    outpos = 1
-    while !eof(stream) && outpos <= nb
+    nb = to - from + 1
+    while !eof(stream) && from <= to
         if stream.position > stream.available && fillbuffer!(stream) < 1
             break
         end
 
-        num_chunk_bytes = min(nb - outpos + 1, stream.available - stream.position + 1)
-        if outpos + num_chunk_bytes > buflen
+        num_chunk_bytes = min(to - from + 1, stream.available - stream.position + 1)
+        if from + num_chunk_bytes > buflen
             buflen = max(buflen + num_chunk_bytes, 2*buflen)
             resize!(buffer, buflen)
         end
 
-        copy!(buffer, outpos, stream.buffer, stream.position, num_chunk_bytes)
+        copy!(buffer, from, stream.buffer, stream.position, num_chunk_bytes)
         stream.position += num_chunk_bytes
-        outpos += num_chunk_bytes
+        from += num_chunk_bytes
     end
 
     if buflen > oldbuflen
-        resize!(buffer, outpos - 1)
+        resize!(buffer, nb - (to - from + 1))
     end
 
-    return outpos - 1
+    return nb - (to - from + 1)
 end
 
 
