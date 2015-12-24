@@ -167,6 +167,13 @@ function Base.readbytes!(source::IOStream, buffer::AbstractArray{UInt8}, from::I
 end
 
 
+function writebytes(source::IOStream, buffer::AbstractArray{UInt8}, n::Int)
+    result = write(source, pointer_to_array(pointer(buffer), (n,)))
+    flush(source)
+    return result
+end
+
+
 # TODO: using ios_write, but look into _os_write_all
 #function Base.write(source::IOStream, buffer::Vector{UInt8}, n::Int)
 
