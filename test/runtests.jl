@@ -191,7 +191,9 @@ facts("BufferedOutputStream") do
         write(stream, "world")
         @fact stat(path).size --> 0
         write(stream, "!")
-        @fact stat(path).size --> 10
+        # BufferedOutputStream buffer has run out of space,
+        # but IOStream buffer has not
+        @fact stat(path).size --> 0
         flush(stream)
         @fact stat(path).size --> 11
         write(stream, "...")
