@@ -182,6 +182,15 @@ facts("BufferedOutputStream") do
 
         @fact takebuf_string(stream) == takebuf_string(iobuf) --> true
     end
+
+    context("write_result") do
+        sink = IOBuffer()
+        stream = BufferedOutputStream(sink, 16)
+        for len in 0:10:100
+            result = write(stream, repeat("x", len))
+            @fact result == len --> true
+        end
+    end
 end
 
 
