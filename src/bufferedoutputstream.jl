@@ -84,6 +84,7 @@ function Base.append!(stream::BufferedOutputStream, data::Vector{UInt8},
                       start::Int, stop::Int)
     buffer = stream.buffer
     position = stream.position
+    writelen = stop - start + 1
     buflen = length(buffer)
     while true
         if position > buflen
@@ -103,6 +104,7 @@ function Base.append!(stream::BufferedOutputStream, data::Vector{UInt8},
         end
     end
     stream.position = position
+    return writelen
 end
 
 
