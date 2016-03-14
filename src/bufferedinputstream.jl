@@ -79,7 +79,7 @@ Advance the stream forward by n bytes.
 @inline function seekforward(stream::BufferedInputStream, n_::Integer)
     n0 = n = convert(Int, n_)
     if n < 0
-        error("n must be non-negative in seekforward")
+        throw(ArgumentError("n must be non-negative in seekforward"))
     end
 
     while stream.position + n > stream.available + 1
@@ -251,7 +251,8 @@ function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
             stream.available = 0
         end
     else
-        error("Can't seek in input stream with source of type ", T)
+        throw(ArgumentError(
+            string("Can't seek in input stream with source of type ", T)))
         # TODO: Allow seeking forwards by just reading and discarding input
     end
 end
