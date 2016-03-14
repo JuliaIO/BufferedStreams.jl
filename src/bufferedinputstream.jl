@@ -1,4 +1,3 @@
-
 """
 BufferedInputStream{T} provides buffered reading from a source of type T.
 
@@ -41,15 +40,12 @@ function fillbuffer!(stream::BufferedInputStream)
         return 0
     end
 
-    oldbuflen = buflen = length(stream.buffer)
-    keeplen = 0
-    if stream.anchor > 0
+    if isanchored(stream)
         keeplen = stream.available - stream.anchor + 1
 
         # expand the buffer if we are attempting to keep most of it
-        if 2*keeplen > buflen
-            buflen *= 2
-            resize!(stream.buffer, buflen)
+        if keeplen > div(length(stream.buffer), 2)
+            resize!(stream.buffer, length(stream.buffer) * 2)
         end
 
         gap = stream.position - stream.anchor
@@ -58,10 +54,11 @@ function fillbuffer!(stream::BufferedInputStream)
         stream.anchor = 1
         stream.position = stream.anchor + gap
     else
+        keeplen = 0
         stream.position = 1
     end
 
-    nb = Int64(readbytes!(stream.source, stream.buffer, keeplen + 1, buflen))
+    nb::Int = readbytes!(stream.source, stream.buffer, keeplen + 1, endof(stream.buffer))
     stream.available = nb + keeplen
 
     return nb
@@ -73,22 +70,6 @@ Return true if no further data is available from the stream.
 """
 @inline function Base.eof(stream::BufferedInputStream)
     return stream.position > stream.available && eof(stream.source)
-end
-
-
-"""
-Return the next byte from the input stream without advancing the position.
-"""
-@inline function peek(stream::BufferedInputStream)
-    position = stream.position
-    if position > stream.available
-        if fillbuffer!(stream) < 1
-            throw(EOFError())
-        end
-        position = stream.position
-    end
-    @inbounds c = stream.buffer[position]
-    return c
 end
 
 
@@ -114,18 +95,30 @@ end
 
 
 """
-Read and return one byte from the input stream.
+Return the next byte from the input stream without advancing the position.
 """
-@inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
-    position = stream.position
-    if position > stream.available
+@inline function peek(stream::BufferedInputStream)
+    if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())
         end
-        position = stream.position
     end
-    @inbounds c = stream.buffer[position]
-    stream.position = position + 1
+    @inbounds c = stream.buffer[stream.position]
+    return c
+end
+
+
+"""
+Read and return one byte from the input stream.
+"""
+@inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
+    if stream.position > stream.available
+        if fillbuffer!(stream) < 1
+            throw(EOFError())
+        end
+    end
+    @inbounds c = stream.buffer[stream.position]
+    stream.position += 1
     return c
 end
 
@@ -196,7 +189,7 @@ end
 Return true if the stream is anchored.
 """
 function isanchored(stream::BufferedInputStream)
-    return stream.anchor != 0
+    return stream.anchor > 0
 end
 
 
@@ -227,7 +220,7 @@ function takeanchored!(stream::BufferedInputStream)
         throw(EOFError())
     end
     chunk = stream.buffer[stream.anchor:stream.position - 1]
-    stream.anchor = 0
+    upanchor!(stream)
     return chunk
 end
 
@@ -262,5 +255,3 @@ function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
         # TODO: Allow seeking forwards by just reading and discarding input
     end
 end
-
-
