@@ -97,7 +97,7 @@ end
 
 
 function Base.empty!(stream::BufferedOutputStream{EmptyStreamSource})
-    stream.position = 1
+    return stream.position = 1
 end
 
 
