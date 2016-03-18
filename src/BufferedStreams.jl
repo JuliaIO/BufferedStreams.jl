@@ -1,3 +1,4 @@
+isdefined(Base, :__precompile__) && __precompile__()
 
 module BufferedStreams
 
@@ -12,14 +13,8 @@ export BufferedInputStream,
        upanchor!,
        takeanchored!
 
-
-
-
 include("bufferedinputstream.jl")
 include("bufferedoutputstream.jl")
 include("sources.jl")
 
-
 end # module BufferedStreams
-
-
