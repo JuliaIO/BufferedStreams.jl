@@ -207,6 +207,8 @@ facts("BufferedOutputStream") do
             @fact stat(path).size --> 11
             write(stream, "...")
             @fact stat(path).size --> 11
+            close(stream)
+            @fact stat(path).size --> 14
         end
     end
 end
