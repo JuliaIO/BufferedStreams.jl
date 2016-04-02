@@ -154,9 +154,10 @@ facts("BufferedOutputStream") do
         for c in data
             write(stream, c)
         end
-        close(stream)
-
+        flush(stream)
         @fact takebuf_array(sink) == data --> true
+        close(stream)
+        @fact isopen(sink) --> false
     end
 
     context("arrays") do
@@ -167,8 +168,8 @@ facts("BufferedOutputStream") do
             write(iobuf, data)
             write(stream, data)
         end
-
         @fact takebuf_array(stream) == takebuf_array(iobuf) --> true
+        close(stream)
     end
 
     context("takebuf_string") do
@@ -208,6 +209,7 @@ facts("BufferedOutputStream") do
             write(stream, "...")
             @fact stat(path).size --> 11
             close(stream)
+            @fact isopen(out) --> false
             @fact stat(path).size --> 14
         end
     end

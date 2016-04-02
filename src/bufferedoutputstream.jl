@@ -120,5 +120,6 @@ end
 function Base.close(stream::BufferedOutputStream)
     flushbuffer!(stream, true)
     flush(stream)
+    close(stream.sink)
 end
 
