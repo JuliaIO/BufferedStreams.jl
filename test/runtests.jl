@@ -193,20 +193,21 @@ facts("BufferedOutputStream") do
     end
 
     context("iostream") do
-        path, io = mktemp()
-        stream = BufferedOutputStream(open(path, "w"), 10)
-        write(stream, "hello")
-        @fact stat(path).size --> 0
-        write(stream, "world")
-        @fact stat(path).size --> 0
-        write(stream, "!")
-        # BufferedOutputStream buffer has run out of space,
-        # but IOStream buffer has not
-        @fact stat(path).size --> 0
-        flush(stream)
-        @fact stat(path).size --> 11
-        write(stream, "...")
-        @fact stat(path).size --> 11
+        mktemp() do path, out
+            stream = BufferedOutputStream(out, 10)
+            write(stream, "hello")
+            @fact stat(path).size --> 0
+            write(stream, "world")
+            @fact stat(path).size --> 0
+            write(stream, "!")
+            # BufferedOutputStream buffer has run out of space,
+            # but IOStream buffer has not
+            @fact stat(path).size --> 0
+            flush(stream)
+            @fact stat(path).size --> 11
+            write(stream, "...")
+            @fact stat(path).size --> 11
+        end
     end
 end
 
