@@ -37,10 +37,8 @@ function Base.readbytes!(source::EmptyStreamSource, buffer::Vector{UInt8},
     return 0
 end
 
-
-function Base.eof(source::EmptyStreamSource)
-    return true
-end
+Base.eof(source::EmptyStreamSource) = true
+Base.close(source::EmptyStreamSource) = nothing
 
 
 function BufferedInputStream(data::Vector{UInt8})

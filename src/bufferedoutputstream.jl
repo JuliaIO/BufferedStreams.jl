@@ -109,16 +109,17 @@ end
 
 
 function Base.flush(stream::BufferedOutputStream)
-    result = flushbuffer!(stream)
-
-    if typeof(stream.sink) <: IOStream
+    flushbuffer!(stream)
+    if applicable(flush, stream.sink)
         flush(stream.sink)
     end
-    return result
+    return stream
 end
 
 
 function Base.close(stream::BufferedOutputStream)
     flushbuffer!(stream, true)
+    flush(stream)
+    close(stream.sink)
 end
 
