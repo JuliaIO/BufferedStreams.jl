@@ -1,6 +1,12 @@
 
-using BufferedStreams, FactCheck
+using BufferedStreams
 
+if VERSION >= v"0.5-"
+    using Base.Test
+else
+    using BaseTestNext
+    const Test = BaseTestNext
+end
 
 # A few things that might not be obvious:
 #   * In a few places we wrap an array in an IOBuffer before wrapping it in a
@@ -9,22 +15,22 @@ using BufferedStreams, FactCheck
 #   * Similar, we manually set the buffer size to be smaller than the default to
 #     force more buffer refills.
 
-facts("BufferedInputStream") do
-    context("readbytes") do
+@testset "BufferedInputStream" begin
+    @testset "readbytes" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
         read_data = UInt8[]
         while !eof(stream)
             push!(read_data, read(stream, UInt8))
         end
-        @fact data == read_data --> true
-        @fact data == readbytes(BufferedInputStream(IOBuffer(data), 1024)) --> true
+        @test data == read_data
+        @test data == readbytes(BufferedInputStream(IOBuffer(data), 1024))
 
         halfn = div(length(data), 2)
-        @fact data[1:halfn] == readbytes(BufferedInputStream(IOBuffer(data), 1024), halfn) --> true
+        @test data[1:halfn] == readbytes(BufferedInputStream(IOBuffer(data), 1024), halfn)
     end
 
-    context("readuntil") do
+    @testset "readuntil" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
@@ -54,22 +60,22 @@ facts("BufferedInputStream") do
             end
         end
 
-        @fact all(chunk_results) --> true
-        @fact num_zeros == true_num_zeros --> true
+        @test all(chunk_results)
+        @test num_zeros == true_num_zeros
     end
 
-    context("arrays") do
+    @testset "arrays" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(data)
         read_data = UInt8[]
         while !eof(stream)
             push!(read_data, read(stream, UInt8))
         end
-        @fact data == read_data --> true
-        @fact data == readbytes(BufferedInputStream(data)) --> true
+        @test data == read_data
+        @test data == readbytes(BufferedInputStream(data))
     end
 
-    context("anchors") do
+    @testset "anchors" begin
         data = rand(UInt8, 100000)
 
         function random_range(n)
@@ -97,10 +103,10 @@ facts("BufferedInputStream") do
             error("nothing extracted")
         end
 
-        @fact all(Bool[test_anchor() for _ in 1:100]) --> true
+        @test all(Bool[test_anchor() for _ in 1:100])
     end
 
-    context("seek") do
+    @testset "seek" begin
         n = 100000
         data = rand(UInt8, n)
         positions = rand(0:n-1, 1000)
@@ -111,13 +117,13 @@ facts("BufferedInputStream") do
         end
 
         stream = BufferedInputStream(data)
-        @fact all(Bool[test_seek(stream, position) for position in positions]) --> true
+        @test all(Bool[test_seek(stream, position) for position in positions])
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @fact all(Bool[test_seek(stream, position) for position in positions]) --> true
+        @test all(Bool[test_seek(stream, position) for position in positions])
     end
 
-    context("seekforward") do
+    @testset "seekforward" begin
         n = 100000
         data = rand(UInt8, n)
         positions = rand(0:n-1, 1000)
@@ -136,18 +142,18 @@ facts("BufferedInputStream") do
         end
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @fact_throws seekforward(stream, n + 1)
-        @fact_throws seekforward(stream, -1)
+        @test_throws Exception seekforward(stream, n + 1)
+        @test_throws Exception seekforward(stream, -1)
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @fact all(Bool[test_seekforward(stream, position, offset)
-                       for (position, offset) in zip(positions, offsets)]) --> true
+        @test all(Bool[test_seekforward(stream, position, offset)
+                       for (position, offset) in zip(positions, offsets)])
     end
 end
 
 
-facts("BufferedOutputStream") do
-    context("write") do
+@testset "BufferedOutputStream" begin
+    @testset "write" begin
         data = rand(UInt8, 1000000)
         sink = IOBuffer()
         stream = BufferedOutputStream(sink, 1024)
@@ -155,12 +161,12 @@ facts("BufferedOutputStream") do
             write(stream, c)
         end
         flush(stream)
-        @fact takebuf_array(sink) == data --> true
+        @test takebuf_array(sink) == data
         close(stream)
-        @fact isopen(sink) --> false
+        @test !isopen(sink)
     end
 
-    context("arrays") do
+    @testset "arrays" begin
         iobuf = IOBuffer()
         stream = BufferedOutputStream()
         for _ in 1:1000
@@ -168,11 +174,11 @@ facts("BufferedOutputStream") do
             write(iobuf, data)
             write(stream, data)
         end
-        @fact takebuf_array(stream) == takebuf_array(iobuf) --> true
+        @test takebuf_array(stream) == takebuf_array(iobuf)
         close(stream)
     end
 
-    context("takebuf_string") do
+    @testset "takebuf_string" begin
         data = rand('A':'z', 1000000)
         iobuf = IOBuffer()
         stream = BufferedOutputStream()
@@ -181,36 +187,36 @@ facts("BufferedOutputStream") do
             write(iobuf, c)
         end
 
-        @fact takebuf_string(stream) == takebuf_string(iobuf) --> true
+        @test takebuf_string(stream) == takebuf_string(iobuf)
     end
 
-    context("write_result") do
+    @testset "write_result" begin
         sink = IOBuffer()
         stream = BufferedOutputStream(sink, 16)
         for len in 0:10:100
             result = write(stream, repeat("x", len))
-            @fact result == len --> true
+            @test result == len
         end
     end
 
-    context("iostream") do
+    @testset "iostream" begin
         mktemp() do path, out
             stream = BufferedOutputStream(out, 10)
             write(stream, "hello")
-            @fact stat(path).size --> 0
+            @test stat(path).size == 0
             write(stream, "world")
-            @fact stat(path).size --> 0
+            @test stat(path).size == 0
             write(stream, "!")
             # BufferedOutputStream buffer has run out of space,
             # but IOStream buffer has not
-            @fact stat(path).size --> 0
+            @test stat(path).size == 0
             flush(stream)
-            @fact stat(path).size --> 11
+            @test stat(path).size == 11
             write(stream, "...")
-            @fact stat(path).size --> 11
+            @test stat(path).size == 11
             close(stream)
-            @fact isopen(out) --> false
-            @fact stat(path).size --> 14
+            @test !isopen(out)
+            @test stat(path).size == 14
         end
     end
 end
