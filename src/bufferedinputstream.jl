@@ -107,6 +107,26 @@ Return the next byte from the input stream without advancing the position.
     return c
 end
 
+"""
+Fills `buffer` with bytes from `stream`'s buffer without advancing the
+position.
+
+Unless the buffer is empty, we do not re-fill it. Therefore the number of bytes
+read is limited to the minimum of `nb` and the remaining bytes in the buffer.
+"""
+function peekbytes!(stream::BufferedInputStream,
+                    buffer::AbstractArray{UInt8},
+                    nb=length(buffer))
+    if stream.position > stream.available
+        if fillbuffer!(stream) < 1
+            throw(EOFError())
+        end
+    end
+    nb = min(nb, stream.available - stream.position + 1)
+    copy!(buffer, 1, stream.buffer, stream.position, nb)
+    return nb
+end
+
 
 """
 Read and return one byte from the input stream.
