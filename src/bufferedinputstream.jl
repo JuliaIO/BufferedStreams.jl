@@ -28,8 +28,8 @@ type BufferedInputStream{T} <: IO
     anchor::Int
 end
 
-function BufferedInputStream{T}(source::T, buflen::Integer=100000)
-    return BufferedInputStream{T}(source, Array(UInt8, buflen), 1, 0, 0)
+function BufferedInputStream{T}(source::T, buflen::Integer=default_buffer_size)
+    return BufferedInputStream{T}(source, Vector{UInt8}(buflen), 1, 0, 0)
 end
 
 """
