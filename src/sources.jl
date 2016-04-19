@@ -5,7 +5,7 @@
 
 # Most sinks always write all available data, so don't need to handle the `eof`
 # parameter.
-function writebytes(sink, buffer::Vector{UInt8}, n::Int, eof::Bool)
+function writebytes(sink, buffer::AbstractArray{UInt8}, n::Int, eof::Bool)
     return writebytes(sink, buffer, n)
 end
 
