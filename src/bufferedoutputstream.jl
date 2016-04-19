@@ -34,12 +34,12 @@ end
 Flush all accumulated data from the buffer.
 """
 function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
-    nb = writebytes(stream.sink, stream.buffer, stream.position - 1, eof)
-    if nb == stream.position - 1
-        stream.position = 1
-    elseif nb != 0
+    buffered = stream.position - 1
+    written = writebytes(stream.sink, stream.buffer, buffered, eof)
+    if written != buffered
         error("BufferedOutputStream sink failed to write all data")
     end
+    stream.position = 1
     return
 end
 
