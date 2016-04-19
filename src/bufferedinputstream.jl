@@ -28,11 +28,9 @@ type BufferedInputStream{T} <: IO
     anchor::Int
 end
 
-
 function BufferedInputStream{T}(source::T, buflen::Integer=100000)
     return BufferedInputStream{T}(source, Array(UInt8, buflen), 1, 0, 0)
 end
-
 
 """
 Refill the buffer, optionally moving and retaining part of the data.
@@ -66,14 +64,12 @@ function fillbuffer!(stream::BufferedInputStream)
     return nb
 end
 
-
 """
 Return true if no further data is available from the stream.
 """
 @inline function Base.eof(stream::BufferedInputStream)
     return stream.position > stream.available && eof(stream.source)
 end
-
 
 """
 Advance the stream forward by n bytes.
@@ -94,7 +90,6 @@ Advance the stream forward by n bytes.
     stream.position += n
     return n0
 end
-
 
 """
 Return the next byte from the input stream without advancing the position.
@@ -129,7 +124,6 @@ function peekbytes!(stream::BufferedInputStream,
     return nb
 end
 
-
 """
 Read and return one byte from the input stream.
 """
@@ -143,7 +137,6 @@ Read and return one byte from the input stream.
     stream.position += 1
     return c
 end
-
 
 # Special purpose readuntil for plain bytes.
 function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
@@ -169,13 +162,11 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
     return chunk
 end
 
-
 function readbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
                     nb=length(buffer))
     return readbytes!(stream, buffer, 1, nb)
 end
-
 
 function readbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
@@ -206,7 +197,6 @@ function readbytes!(stream::BufferedInputStream,
     return nb - (to - from + 1)
 end
 
-
 """
 Return true if the stream is anchored.
 """
@@ -214,14 +204,12 @@ function isanchored(stream::BufferedInputStream)
     return stream.anchor > 0
 end
 
-
 """
 Set the buffer's anchor to its current position.
 """
 function anchor!(stream::BufferedInputStream)
     stream.anchor = stream.position
 end
-
 
 """
 Remove and return a buffer's anchor.
@@ -231,7 +219,6 @@ function upanchor!(stream::BufferedInputStream)
     stream.anchor = 0
     return anchor
 end
-
 
 """
 Copy and return a byte array from the anchor up to, but not including the
@@ -246,14 +233,12 @@ function takeanchored!(stream::BufferedInputStream)
     return chunk
 end
 
-
 """
 Current position in the stream. Assumes the source has reportable position.
 """
 function Base.position(stream::BufferedInputStream)
     return position(stream.source) - stream.available + stream.position - 1
 end
-
 
 """
 Move to the given position in the stream.

@@ -26,11 +26,9 @@ type BufferedOutputStream{T} <: IO
     position::Int
 end
 
-
 function BufferedOutputStream{T}(sink::T, buflen::Integer=100000)
     return BufferedOutputStream{T}(sink, Array(UInt8, buflen), 1)
 end
-
 
 """
 Flush all accumulated data from the buffer.
@@ -44,7 +42,6 @@ function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
     end
     return
 end
-
 
 """
 Read and return one byte.
@@ -65,7 +62,6 @@ Read and return one byte.
     return 1
 end
 
-
 """
 Write a byte array.
 """
@@ -73,7 +69,6 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
     append!(stream, data, 1, length(data))
 end
-
 
 # TODO: This is too slow. I think this pointer/pointer_to_array trick may
 # allocate, so we should try to avoid it everywhere, but especially here.
@@ -107,7 +102,6 @@ function Base.append!(stream::BufferedOutputStream, data::Vector{UInt8},
     return writelen
 end
 
-
 function Base.flush(stream::BufferedOutputStream)
     flushbuffer!(stream)
     if applicable(flush, stream.sink)
@@ -115,7 +109,6 @@ function Base.flush(stream::BufferedOutputStream)
     end
     return stream
 end
-
 
 function Base.close(stream::BufferedOutputStream)
     flushbuffer!(stream, true)

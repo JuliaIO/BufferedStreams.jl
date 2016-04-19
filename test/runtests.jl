@@ -1,4 +1,3 @@
-
 using BufferedStreams
 
 if VERSION >= v"0.5-"
@@ -251,4 +250,3 @@ end
         end
     end
 end
-
