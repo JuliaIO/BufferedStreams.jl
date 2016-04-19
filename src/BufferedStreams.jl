@@ -17,5 +17,6 @@ export BufferedInputStream,
 include("bufferedinputstream.jl")
 include("bufferedoutputstream.jl")
 include("sources.jl")
+include("emptystream.jl")
 
 end # module BufferedStreams
