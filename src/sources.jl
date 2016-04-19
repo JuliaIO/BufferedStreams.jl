@@ -42,7 +42,7 @@ function BufferedInputStream(data::Vector{UInt8}, len::Integer)
 end
 
 # Resize the buffer. This way we can do IOBuffer-style string-building.
-function writebytes(source::EmptyStreamSource, buffer::Vector{UInt8}, n::Int, eof::Bool)
+function writebytes(::EmptyStreamSource, buffer::Vector{UInt8}, n::Int, eof::Bool)
     # TODO: what happens when we try to resize mmaped data?
     if n >= length(buffer)
         resize!(buffer, max(n, max(1024, 2 * length(buffer))))
@@ -105,23 +105,6 @@ end
 # IO source
 # ---------
 
-#function Base.readbytes!(source::IO, buffer::Vector{UInt8}, from::Int, to::Int)
-    #i = from
-    #while i <= to && !eof(source)
-        #@inbounds buffer[i] = read(source, Uint8)
-        #i += 1
-    #end
-    #return i - from
-#end
-
-
-#function writebytes(source::IO, buffer::Vector{UInt8}, n::Int)
-    #for i in 1:n
-        #write(source, buffer[i])
-    #end
-    #return n
-#end
-
 # Source and sink interface for generic IO types
 function readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int)
     return Base.readbytes!(
@@ -130,8 +113,8 @@ function readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int
         to - from + 1)
 end
 
-function writebytes(source::IO, buffer::AbstractArray{UInt8}, n::Int)
-    return write(source, pointer_to_array(pointer(buffer), (n,)))
+function writebytes(sink::IO, buffer::AbstractArray{UInt8}, n::Int)
+    return write(sink, pointer_to_array(pointer(buffer), (n,)))
 end
 
 
