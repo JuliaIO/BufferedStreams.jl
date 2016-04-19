@@ -1,10 +1,3 @@
-# Most sinks always write all available data, so don't need to handle the `eof`
-# parameter.
-function writebytes(sink, buffer::AbstractArray{UInt8}, n::Int, eof::Bool)
-    return writebytes(sink, buffer, n)
-end
-
-
 # IO source
 # ---------
 
@@ -16,7 +9,7 @@ function readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int
         to - from + 1)
 end
 
-function writebytes(sink::IO, buffer::AbstractArray{UInt8}, n::Int)
+function writebytes(sink::IO, buffer::AbstractArray{UInt8}, n::Int, eof::Bool)
     return write(sink, pointer_to_array(pointer(buffer), (n,)))
 end
 
