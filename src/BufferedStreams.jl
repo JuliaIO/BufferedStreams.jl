@@ -4,7 +4,6 @@ module BufferedStreams
 
 export BufferedInputStream,
        BufferedOutputStream,
-       EmptyStreamSource,
        peek,
        peekbytes!,
        seekforward,
@@ -13,6 +12,9 @@ export BufferedInputStream,
        anchor!,
        upanchor!,
        takeanchored!
+
+# these exported names are deprecated; will be removed
+export EmptyStreamSource
 
 include("bufferedinputstream.jl")
 include("bufferedoutputstream.jl")
