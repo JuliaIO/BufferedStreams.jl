@@ -1,12 +1,14 @@
 """
-BufferedInputStream{T} provides buffered reading from a source of type T.
+`BufferedInputStream{T}` provides buffered reading from a source of type `T`.
 
-Any type T wrapped in a BufferedInputStream must implement:
-    readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
+Any type `T` wrapped in a `BufferedInputStream` must implement:
+
+    BufferedStreams.readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
 
 This function should:
-    * refill the buffer starting at `from` and not filling past `to`.
-    * return the number of bytes read.
+
+* refill `buffer` starting at `from` and not filling past `to`.
+* return the number of bytes read.
 
 Failure to read any new data into the buffer is interpreted as eof.
 """
@@ -168,17 +170,17 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
 end
 
 
-function Base.readbytes!(stream::BufferedInputStream,
-                         buffer::AbstractArray{UInt8},
-                         nb=length(buffer))
+function readbytes!(stream::BufferedInputStream,
+                    buffer::AbstractArray{UInt8},
+                    nb=length(buffer))
     return readbytes!(stream, buffer, 1, nb)
 end
 
 
-function Base.readbytes!(stream::BufferedInputStream,
-                         buffer::AbstractArray{UInt8},
-                         from::Int,
-                         to::Int)
+function readbytes!(stream::BufferedInputStream,
+                    buffer::AbstractArray{UInt8},
+                    from::Int,
+                    to::Int)
     oldbuflen = buflen = length(buffer)
     nb = to - from + 1
     while !eof(stream) && from <= to

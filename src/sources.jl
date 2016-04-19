@@ -32,8 +32,7 @@ function Base.seek(stream::BufferedInputStream{EmptyStreamSource}, pos::Integer)
 end
 
 
-function Base.readbytes!(source::EmptyStreamSource, buffer::Vector{UInt8},
-                         from::Int, to::Int)
+function readbytes!(::EmptyStreamSource, ::Vector{UInt8}, ::Int, ::Int)
     return 0
 end
 
@@ -142,11 +141,11 @@ end
 
 
 # Source and sink interface for generic IO types
-function Base.readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int)
-    nb = readbytes!(source,
+function readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int)
+    return Base.readbytes!(
+        source,
         pointer_to_array(pointer(buffer, from), (to - from + 1,)),
         to - from + 1)
-    return nb
 end
 
 
@@ -159,7 +158,7 @@ end
 # IOStream source
 # ---------------
 
-function Base.readbytes!(source::IOStream, buffer::AbstractArray{UInt8}, from::Int, to::Int)
+function readbytes!(source::IOStream, buffer::AbstractArray{UInt8}, from::Int, to::Int)
     return ccall(:ios_readall, UInt, (Ptr{Void}, Ptr{Void}, UInt), source.ios,
                  pointer(buffer, from), to - from + 1)
 end
