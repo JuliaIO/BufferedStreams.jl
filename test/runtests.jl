@@ -1,4 +1,5 @@
 using BufferedStreams
+using Compat
 
 if VERSION >= v"0.5-"
     using Base.Test
@@ -15,7 +16,7 @@ end
 #     force more buffer refills.
 
 @testset "BufferedInputStream" begin
-    @testset "readbytes" begin
+    @testset "read" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
         read_data = UInt8[]
@@ -23,10 +24,10 @@ end
             push!(read_data, read(stream, UInt8))
         end
         @test data == read_data
-        @test data == readbytes(BufferedInputStream(IOBuffer(data), 1024))
+        @test data == read(BufferedInputStream(IOBuffer(data), 1024))
 
         halfn = div(length(data), 2)
-        @test data[1:halfn] == readbytes(BufferedInputStream(IOBuffer(data), 1024), halfn)
+        @test data[1:halfn] == read(BufferedInputStream(IOBuffer(data), 1024), halfn)
     end
 
     @testset "peekbytes" begin
@@ -102,7 +103,7 @@ end
             push!(read_data, read(stream, UInt8))
         end
         @test data == read_data
-        @test data == readbytes(BufferedInputStream(data))
+        @test data == read(BufferedInputStream(data))
     end
 
     @testset "anchors" begin
