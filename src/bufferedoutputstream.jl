@@ -43,9 +43,6 @@ function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
     return
 end
 
-"""
-Read and return one byte.
-"""
 @inline function Base.write(stream::BufferedOutputStream, b::UInt8)
     position = stream.position
     buffer = stream.buffer
@@ -62,9 +59,6 @@ Read and return one byte.
     return 1
 end
 
-"""
-Write a byte array.
-"""
 function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
     append!(stream, data, 1, length(data))

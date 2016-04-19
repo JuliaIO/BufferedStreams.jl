@@ -64,9 +64,6 @@ function fillbuffer!(stream::BufferedInputStream)
     return nb
 end
 
-"""
-Return true if no further data is available from the stream.
-"""
 @inline function Base.eof(stream::BufferedInputStream)
     return stream.position > stream.available && eof(stream.source)
 end
@@ -233,9 +230,6 @@ function takeanchored!(stream::BufferedInputStream)
     return chunk
 end
 
-"""
-Current position in the stream. Assumes the source has reportable position.
-"""
 function Base.position(stream::BufferedInputStream)
     return position(stream.source) - stream.available + stream.position - 1
 end
