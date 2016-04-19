@@ -1,7 +1,6 @@
-# IO source
-# ---------
+# IO
+# --
 
-# Source and sink interface for generic IO types
 function readbytes!(source::IO, buffer::AbstractArray{UInt8}, from::Int, to::Int)
     return Base.readbytes!(
         source,
@@ -14,8 +13,8 @@ function writebytes(sink::IO, buffer::AbstractArray{UInt8}, n::Int, eof::Bool)
 end
 
 
-# IOStream source
-# ---------------
+# IOStream
+# --------
 
 function readbytes!(source::IOStream, buffer::AbstractArray{UInt8}, from::Int, to::Int)
     return ccall(:ios_readall, UInt, (Ptr{Void}, Ptr{Void}, UInt), source.ios,

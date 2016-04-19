@@ -21,7 +21,7 @@ const default_buffer_size = 128 * 2^10
 
 include("bufferedinputstream.jl")
 include("bufferedoutputstream.jl")
-include("sources.jl")
 include("emptystream.jl")
+include("io.jl")
 
 end # module BufferedStreams
