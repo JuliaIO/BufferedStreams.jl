@@ -71,6 +71,17 @@ function Base.write(stream::BufferedOutputStream{EmptyStream}, byte::UInt8)
     return 1
 end
 
+function Base.write(stream::BufferedOutputStream{EmptyStream}, data::Vector{UInt8})
+    n = length(data)
+    n_avail = endof(stream.buffer) - stream.position + 1
+    if n > n_avail
+        resize!(stream.buffer, nextpow2(n + stream.position - 1))
+    end
+    copy!(stream.buffer, stream.position, data, 1)
+    stream.position += n
+    return n
+end
+
 # Faster append for vector-backed output streams.
 @inline function Base.append!(stream::BufferedOutputStream{EmptyStream},
                               data::Vector{UInt8}, start::Int, stop::Int)

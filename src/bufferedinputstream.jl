@@ -49,32 +49,38 @@ function fillbuffer!(stream::BufferedInputStream)
         return 0
     end
 
-    if isanchored(stream)
-        keeplen = stream.available - stream.anchor + 1
-
+    if ismarked(stream)
+        keepfrom = stream.anchor
+        keeplen = stream.available - keepfrom + 1
         # expand the buffer if we are attempting to keep most of it
         if keeplen > div(length(stream.buffer), 2)
             resize!(stream.buffer, length(stream.buffer) * 2)
         end
-
-        gap = stream.position - stream.anchor
-        copy!(stream.buffer, 1, stream.buffer, stream.anchor, keeplen)
-        stream.available = stream.available - stream.anchor + 1
         stream.anchor = 1
-        stream.position = stream.anchor + gap
+        stream.position -= keepfrom - 1
     else
-        keeplen = 0
+        keepfrom = stream.position
+        keeplen = stream.available - keepfrom + 1
         stream.position = 1
     end
 
-    nb::Int = readbytes!(stream.source, stream.buffer, keeplen + 1, endof(stream.buffer))
-    stream.available = nb + keeplen
+    copy!(stream.buffer, 1, stream.buffer, keepfrom, keeplen)
+    nbytes = readbytes!(
+        stream.source,
+        stream.buffer,
+        keeplen + 1,
+        endof(stream.buffer))
+    stream.available = keeplen + nbytes
 
-    return nb
+    return nbytes
 end
 
 @inline function Base.eof(stream::BufferedInputStream)
-    return stream.position > stream.available && eof(stream.source)
+    if stream.position > stream.available
+        return fillbuffer!(stream) == 0
+    else
+        return false
+    end
 end
 
 """
@@ -292,4 +298,19 @@ function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
             string("Can't seek in input stream with source of type ", T)))
         # TODO: Allow seeking forwards by just reading and discarding input
     end
+end
+
+function Base.close(stream::BufferedInputStream)
+    if applicable(close, stream.source)
+        close(stream.source)
+    end
+    return
+end
+
+function Base.pointer(stream::BufferedInputStream, index::Integer=1)
+    return pointer(stream.buffer, stream.position + index - 1)
+end
+
+function available_bytes(stream::BufferedInputStream)
+    return stream.available - stream.position + 1
 end

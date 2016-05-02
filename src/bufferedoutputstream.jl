@@ -73,7 +73,22 @@ end
 
 function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
-    append!(stream, data, 1, length(data))
+    #append!(stream, data, 1, length(data))
+    n_avail = endof(stream.buffer) - stream.position + 1
+    n = min(length(data), n_avail)
+    copy!(stream.buffer, stream.position, data, 1, n)
+    stream.position += n
+    written = n
+    while written < length(data)
+        flushbuffer!(stream)
+        n_avail = endof(stream.buffer) - stream.position + 1
+        @assert n_avail > 0
+        n = min(endof(data) - written, n_avail)
+        copy!(stream.buffer, stream.position, data, written + 1, n)
+        stream.position += n
+        written += n
+    end
+    return written
 end
 
 # TODO: This is too slow. I think this pointer/pointer_to_array trick may
@@ -113,11 +128,22 @@ function Base.flush(stream::BufferedOutputStream)
     if applicable(flush, stream.sink)
         flush(stream.sink)
     end
-    return stream
+    return
 end
 
 function Base.close(stream::BufferedOutputStream)
-    flushbuffer!(stream, true)
     flush(stream)
     close(stream.sink)
+end
+
+function Base.eof(stream::BufferedOutputStream)
+    return true
+end
+
+function Base.pointer(stream::BufferedOutputStream, index::Integer=1)
+    return pointer(stream.buffer, stream.position + index - 1)
+end
+
+function available_bytes(stream::BufferedOutputStream)
+    return max(endof(stream.buffer) - stream.position + 1, 0)
 end

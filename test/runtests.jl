@@ -224,27 +224,39 @@ end
 @testset "BufferedOutputStream" begin
     @testset "write" begin
         data = rand(UInt8, 1000000)
+        stream1 = BufferedOutputStream()
         sink = IOBuffer()
-        stream = BufferedOutputStream(sink, 1024)
+        stream2 = BufferedOutputStream(sink, 1024)
         for c in data
-            write(stream, c)
+            write(stream1, c)
+            write(stream2, c)
         end
-        flush(stream)
+        flush(stream1)
+        flush(stream2)
+        @test takebuf_array(stream1) == data
         @test takebuf_array(sink) == data
-        close(stream)
+        close(stream1)
+        close(stream2)
         @test !isopen(sink)
     end
 
     @testset "arrays" begin
-        iobuf = IOBuffer()
-        stream = BufferedOutputStream()
+        expected = UInt8[]
+        stream1 = BufferedOutputStream()
+        sink = IOBuffer()
+        stream2 = BufferedOutputStream(sink, 1024)
         for _ in 1:1000
             data = rand(UInt8, rand(1:1000))
-            write(iobuf, data)
-            write(stream, data)
+            append!(expected, data)
+            write(stream1, data)
+            write(stream2, data)
         end
-        @test takebuf_array(stream) == takebuf_array(iobuf)
-        close(stream)
+        flush(stream1)
+        flush(stream2)
+        @test takebuf_array(stream1) == expected
+        @test takebuf_array(sink) == expected
+        close(stream1)
+        close(stream2)
     end
 
     @testset "takebuf_string" begin
