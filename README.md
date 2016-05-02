@@ -25,6 +25,10 @@ not exceeding position `to` and return the number of bytes written.
 `BufferedInputStream` is itself an `IO` type and implements the source type so
 you can use it like any other `IO` type.
 
+Calling `close` propagates to the underlying source object if applicable; once
+you wrap an `IO` object with a buffered stream, you can automatically close it
+by calling `close` on the buffered stream.
+
 
 ### Anchors
 
