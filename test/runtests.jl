@@ -30,6 +30,37 @@ end
         @test data[1:halfn] == readbytes(BufferedInputStream(IOBuffer(data), 1024), halfn)
     end
 
+    @testset "peekbytes" begin
+        data = rand(UInt8, 1000000)
+        stream = BufferedInputStream(IOBuffer(data), 1024)
+
+        read_data = Array{UInt8}(1000)
+        @test peekbytes!(stream, read_data, 1000) == 1000
+        @test data[1:1000] == read_data
+        # Check that we read the bytes we just peeked, i.e. that the position
+        # wasn't advanced on peekbytes!()
+        readbytes!(stream, read_data, 1000)
+        @test data[1:1000] == read_data
+        # Check that we now peek the next 24 bytes, as we don't go past the end
+        # of the buffer
+        @test peekbytes!(stream, read_data, 1000) == 24
+        @test data[1001:1024] == read_data[1:24]
+
+        # Reset the data
+        data = rand(UInt8, 1000000)
+        stream = BufferedInputStream(IOBuffer(data), 1024)
+
+        read_data = Array{UInt8}(2000)
+        @test peekbytes!(stream, read_data, 2000) == 1024
+        # Note that we truncate at buffer size, as
+        @test data[1:1024] == read_data[1:1024]
+
+        # Check that we only read up to the buffer size
+        read_data = Array{UInt8}(5)
+        @test peekbytes!(stream, read_data) == 5
+        @test data[1:5] == read_data
+    end
+
     @testset "readuntil" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
