@@ -224,9 +224,11 @@ end
         stream = BufferedInputStream(iobuffer)
         @test isopen(stream)
         @test isopen(iobuffer)
+        read(stream, UInt8)
         close(stream)
         @test !isopen(stream)
         @test !isopen(iobuffer)
+        @test_throws Exception read(stream, UInt8)
     end
 end
 
@@ -295,9 +297,11 @@ end
         stream = BufferedOutputStream(iobuffer)
         @test isopen(stream)
         @test isopen(iobuffer)
+        write(stream, 0x00)
         close(stream)
         @test !isopen(stream)
         @test !isopen(iobuffer)
+        @test_throws Exception write(stream, 0x00)
     end
 
     @testset "iostream" begin

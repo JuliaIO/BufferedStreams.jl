@@ -106,10 +106,18 @@ Advance the stream forward by n bytes.
     return n0
 end
 
+function checkopen(stream::BufferedInputStream)
+    if isopen(stream)
+        return true
+    end
+    error("buffered input stream is already closed")
+end
+
 """
 Return the next byte from the input stream without advancing the position.
 """
 @inline function peek(stream::BufferedInputStream)
+    checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())
@@ -143,6 +151,7 @@ end
 Read and return one byte from the input stream.
 """
 @inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
+    checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())
@@ -155,6 +164,7 @@ end
 
 # Special purpose readuntil for plain bytes.
 function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
+    checkopen(stream)
     anchor!(stream)
     while true
         p0 = pointer(stream.buffer, stream.position)
@@ -180,6 +190,7 @@ end
 function readbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
                     nb=length(buffer))
+    checkopen(stream)
     return readbytes!(stream, buffer, 1, nb)
 end
 
@@ -187,6 +198,7 @@ function readbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
                     from::Int,
                     to::Int)
+    checkopen(stream)
     oldbuflen = buflen = length(buffer)
     nb = to - from + 1
     while !eof(stream) && from <= to

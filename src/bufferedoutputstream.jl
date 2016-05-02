@@ -55,7 +55,15 @@ function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
     return
 end
 
+function checkopen(stream::BufferedOutputStream)
+    if isopen(stream)
+        return true
+    end
+    error("buffered output stream is already closed")
+end
+
 @inline function Base.write(stream::BufferedOutputStream, b::UInt8)
+    checkopen(stream)
     position = stream.position
     buffer = stream.buffer
     if position > length(buffer)
@@ -72,6 +80,7 @@ end
 end
 
 function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
+    checkopen(stream)
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
     #append!(stream, data, 1, length(data))
     n_avail = endof(stream.buffer) - stream.position + 1
