@@ -61,6 +61,23 @@ end
         @test data[1:5] == read_data
     end
 
+    @testset "readbytes!" begin
+        stream = BufferedInputStream(IOBuffer([0x01:0xff;]), 4)
+        @test !eof(stream)
+        out = zeros(UInt8, 2)
+        @test BufferedStreams.readbytes!(stream, out) === 2
+        @test out == [0x01, 0x02]
+        out = zeros(UInt8, 3)
+        @test BufferedStreams.readbytes!(stream, out) === 3
+        @test out == [0x03, 0x04, 0x05]
+        out = zeros(UInt8, 5)
+        @test BufferedStreams.readbytes!(stream, out) === 5
+        @test out == [0x06, 0x07, 0x08, 0x09, 0x0a]
+        @test !eof(stream)
+        @test readbytes(stream) == [0x0b:0xff;]
+        @test eof(stream)
+    end
+
     @testset "readuntil" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
