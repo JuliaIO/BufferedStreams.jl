@@ -19,17 +19,26 @@ type BufferedInputStream{T} <: IO
     # Position of the next byte to be read in buffer.
     position::Int
 
-    # Number of bytes available in buffer. I.e. buffer[1:available] is valid
-    # data.
+    # Number of bytes available in buffer.
+    # I.e. buffer[1:available] is valid data.
     available::Int
 
-    # If positive, preserve and move buffer[anchor:available] when refilling
-    # the buffer.
+    # If positive, preserve and move buffer[anchor:available]
+    # when refilling the buffer.
     anchor::Int
 end
 
-function BufferedInputStream{T}(source::T, buflen::Integer=default_buffer_size)
-    return BufferedInputStream{T}(source, Vector{UInt8}(buflen), 1, 0, 0)
+function BufferedInputStream{T}(source::T, bufsize::Integer=default_buffer_size)
+    return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0)
+end
+
+function Base.show{T}(io::IO, stream::BufferedInputStream{T})
+    bufsize = length(stream.buffer)
+    filled = stream.available - stream.position + 1
+    print(io,
+        "BufferedInputStream{$T}(<",
+        _datasize(bufsize), " buffer, ",
+        round(Int, filled / bufsize * 100), "% filled>)")
 end
 
 """

@@ -26,8 +26,20 @@ type BufferedOutputStream{T} <: IO
     position::Int
 end
 
-function BufferedOutputStream{T}(sink::T, buflen::Integer=default_buffer_size)
-    return BufferedOutputStream{T}(sink, Array(UInt8, buflen), 1)
+function BufferedOutputStream{T}(sink::T, bufsize::Integer=default_buffer_size)
+    if bufsize ≤ 0
+        throw(ArgumentError("buffer size must be positive"))
+    end
+    return BufferedOutputStream{T}(sink, Vector{UInt8}(bufsize), 1)
+end
+
+function Base.show{T}(io::IO, stream::BufferedOutputStream{T})
+    bufsize = length(stream.buffer)
+    filled = stream.position
+    print(io,
+        "BufferedOutputStream{$T}(<",
+        _datasize(bufsize), " buffer, ",
+        round(Int, filled / bufsize * 100), "% filled>)")
 end
 
 """
