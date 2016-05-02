@@ -108,7 +108,7 @@ end
 
 function checkopen(stream::BufferedInputStream)
     if isopen(stream)
-        return true
+        return
     end
     error("buffered input stream is already closed")
 end
@@ -137,6 +137,7 @@ read is limited to the minimum of `nb` and the remaining bytes in the buffer.
 function peekbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
                     nb=length(buffer))
+    checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())

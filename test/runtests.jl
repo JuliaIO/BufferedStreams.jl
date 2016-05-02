@@ -30,7 +30,7 @@ end
         @test data[1:halfn] == read(BufferedInputStream(IOBuffer(data), 1024), halfn)
     end
 
-    @testset "peekbytes" begin
+    @testset "peekbytes!" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
@@ -59,6 +59,9 @@ end
         read_data = Array{UInt8}(5)
         @test peekbytes!(stream, read_data) == 5
         @test data[1:5] == read_data
+
+        close(stream)
+        @test_throws Exception peekbytes!(stream, read_data)
     end
 
     @testset "readbytes!" begin
