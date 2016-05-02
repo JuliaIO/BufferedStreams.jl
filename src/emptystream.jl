@@ -7,9 +7,6 @@ array without additional buffering.
 """
 immutable EmptyStream end
 
-# DEPRECATED: just for backward compatibility
-typealias EmptyStreamSource EmptyStream
-
 Base.close(::EmptyStream) = nothing
 
 Base.position(stream::BufferedInputStream{EmptyStream}) = stream.position - 1
