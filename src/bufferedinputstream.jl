@@ -203,6 +203,33 @@ function readbytes!(stream::BufferedInputStream,
     return nb - (to - from + 1)
 end
 
+function Base.ismarked(stream::BufferedInputStream)
+    return stream.anchor > 0
+end
+
+function Base.mark(stream::BufferedInputStream)
+    stream.anchor = stream.position
+    return stream.anchor
+end
+
+function Base.unmark(stream::BufferedInputStream)
+    if !ismarked(stream)
+        return false
+    end
+    stream.anchor = 0
+    return true
+end
+
+function Base.reset(stream::BufferedInputStream)
+    if !ismarked(stream)
+        error("buffered stream is not marked")
+    end
+    anchor = stream.anchor
+    stream.position = anchor
+    unmark(stream)
+    return anchor
+end
+
 """
 Return true if the stream is anchored.
 """

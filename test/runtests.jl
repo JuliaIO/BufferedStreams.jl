@@ -106,6 +106,27 @@ end
         @test data == read(BufferedInputStream(data))
     end
 
+    @testset "marks" begin
+        # very small buffer
+        stream = BufferedInputStream(IOBuffer([0x01:0xff;]), 2)
+        @test !ismarked(stream)
+        mark(stream)
+        @test ismarked(stream)
+        a = read(stream, UInt8)
+        b = read(stream, UInt8)
+        c = read(stream, UInt8)
+        reset(stream)
+        @test !ismarked(stream)
+        a′ = read(stream, UInt8)
+        b′ = read(stream, UInt8)
+        c′ = read(stream, UInt8)
+        @test (a, b, c) == (a′, b′, c′) == (0x01, 0x02, 0x03)
+        mark(stream)
+        @test unmark(stream)
+        @test !unmark(stream)
+        @test_throws ErrorException reset(stream)
+    end
+
     @testset "anchors" begin
         data = rand(UInt8, 100000)
 
