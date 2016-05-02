@@ -131,9 +131,15 @@ function Base.flush(stream::BufferedOutputStream)
     return
 end
 
+function Base.isopen(stream::BufferedOutputStream)
+    return !isempty(stream.buffer)
+end
+
 function Base.close(stream::BufferedOutputStream)
     flush(stream)
     close(stream.sink)
+    empty!(stream.buffer)
+    return
 end
 
 function Base.eof(stream::BufferedOutputStream)

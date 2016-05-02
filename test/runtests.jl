@@ -74,7 +74,7 @@ end
         @test BufferedStreams.readbytes!(stream, out) === 5
         @test out == [0x06, 0x07, 0x08, 0x09, 0x0a]
         @test !eof(stream)
-        @test readbytes(stream) == [0x0b:0xff;]
+        @test read(stream) == [0x0b:0xff;]
         @test eof(stream)
     end
 
@@ -218,6 +218,16 @@ end
         @test all(Bool[test_seekforward(stream, position, offset)
                        for (position, offset) in zip(positions, offsets)])
     end
+
+    @testset "close" begin
+        iobuffer = IOBuffer([0x00, 0x01])
+        stream = BufferedInputStream(iobuffer)
+        @test isopen(stream)
+        @test isopen(iobuffer)
+        close(stream)
+        @test !isopen(stream)
+        @test !isopen(iobuffer)
+    end
 end
 
 
@@ -278,6 +288,16 @@ end
             result = write(stream, repeat("x", len))
             @test result == len
         end
+    end
+
+    @testset "close" begin
+        iobuffer = IOBuffer()
+        stream = BufferedOutputStream(iobuffer)
+        @test isopen(stream)
+        @test isopen(iobuffer)
+        close(stream)
+        @test !isopen(stream)
+        @test !isopen(iobuffer)
     end
 
     @testset "iostream" begin

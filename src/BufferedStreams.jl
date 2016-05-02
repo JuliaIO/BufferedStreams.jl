@@ -19,6 +19,7 @@ export EmptyStreamSource
 # default buffer size is 128 KiB
 const default_buffer_size = 128 * 2^10
 
+# pretty printer of data size
 function _datasize(nbytes)
     if nbytes < 1024
         return string(nbytes, " B")

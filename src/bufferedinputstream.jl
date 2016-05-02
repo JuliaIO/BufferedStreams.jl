@@ -29,6 +29,9 @@ type BufferedInputStream{T} <: IO
 end
 
 function BufferedInputStream{T}(source::T, bufsize::Integer=default_buffer_size)
+    if bufsize ≤ 0
+        throw(ArgumentError("buffer size must be positive"))
+    end
     return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0)
 end
 
@@ -300,10 +303,15 @@ function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
     end
 end
 
+function Base.isopen(stream::BufferedInputStream)
+    return !isempty(stream.buffer)
+end
+
 function Base.close(stream::BufferedInputStream)
     if applicable(close, stream.source)
         close(stream.source)
     end
+    empty!(stream.buffer)
     return
 end
 
