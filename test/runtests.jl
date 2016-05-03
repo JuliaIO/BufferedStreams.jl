@@ -30,6 +30,15 @@ end
         @test data[1:halfn] == read(BufferedInputStream(IOBuffer(data), 1024), halfn)
     end
 
+    @testset "peek" begin
+        stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
+        @test peek(stream) === 0x01
+        @test peek(stream) === 0x01
+        read(stream, UInt8)
+        @test peek(stream) === 0x02
+        @test peek(stream) === 0x02
+    end
+
     @testset "peekbytes!" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
@@ -232,6 +241,29 @@ end
         @test !isopen(stream)
         @test !isopen(iobuffer)
         @test_throws Exception read(stream, UInt8)
+    end
+
+    @testset "iostream" begin
+        mktemp() do path, input
+            write(input, [0x01, 0x02, 0x03, 0x04, 0x05])
+            flush(input)
+            seekstart(input)
+
+            stream = BufferedInputStream(input, 2)
+            @test !eof(stream)
+            @test read(stream, UInt8) === 0x01
+            @test !eof(stream)
+            @test read(stream, UInt8) === 0x02
+            @test !eof(stream)
+            @test read(stream) == [0x03, 0x04, 0x05]
+            @test eof(stream)
+
+            @test isopen(stream)
+            @test isopen(input)
+            close(stream)
+            @test !isopen(stream)
+            @test !isopen(input)
+        end
     end
 end
 
