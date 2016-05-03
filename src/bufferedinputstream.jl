@@ -1,12 +1,14 @@
 """
-BufferedInputStream{T} provides buffered reading from a source of type T.
+`BufferedInputStream{T}` provides buffered reading from a source of type `T`.
 
-Any type T wrapped in a BufferedInputStream must implement:
-    readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
+Any type `T` wrapped in a `BufferedInputStream` must implement:
+
+    BufferedStreams.readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
 
 This function should:
-    * refill the buffer starting at `from` and not filling past `to`.
-    * return the number of bytes read.
+
+* refill `buffer` starting at `from` and not filling past `to`.
+* return the number of bytes read.
 
 Failure to read any new data into the buffer is interpreted as eof.
 """
@@ -17,20 +19,30 @@ type BufferedInputStream{T} <: IO
     # Position of the next byte to be read in buffer.
     position::Int
 
-    # Number of bytes available in buffer. I.e. buffer[1:available] is valid
-    # data.
+    # Number of bytes available in buffer.
+    # I.e. buffer[1:available] is valid data.
     available::Int
 
-    # If positive, preserve and move buffer[anchor:available] when refilling
-    # the buffer.
+    # If positive, preserve and move buffer[anchor:available]
+    # when refilling the buffer.
     anchor::Int
 end
 
-
-function BufferedInputStream{T}(source::T, buflen::Integer=100000)
-    return BufferedInputStream{T}(source, Array(UInt8, buflen), 1, 0, 0)
+function BufferedInputStream{T}(source::T, bufsize::Integer=default_buffer_size)
+    if bufsize ≤ 0
+        throw(ArgumentError("buffer size must be positive"))
+    end
+    return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0)
 end
 
+function Base.show{T}(io::IO, stream::BufferedInputStream{T})
+    bufsize = length(stream.buffer)
+    filled = stream.available - stream.position + 1
+    print(io,
+        "BufferedInputStream{$T}(<",
+        _datasize(bufsize), " buffer, ",
+        round(Int, filled / bufsize * 100), "% filled>)")
+end
 
 """
 Refill the buffer, optionally moving and retaining part of the data.
@@ -40,38 +52,39 @@ function fillbuffer!(stream::BufferedInputStream)
         return 0
     end
 
-    if isanchored(stream)
-        keeplen = stream.available - stream.anchor + 1
-
+    if ismarked(stream)
+        keepfrom = stream.anchor
+        keeplen = stream.available - keepfrom + 1
         # expand the buffer if we are attempting to keep most of it
         if keeplen > div(length(stream.buffer), 2)
             resize!(stream.buffer, length(stream.buffer) * 2)
         end
-
-        gap = stream.position - stream.anchor
-        copy!(stream.buffer, 1, stream.buffer, stream.anchor, keeplen)
-        stream.available = stream.available - stream.anchor + 1
         stream.anchor = 1
-        stream.position = stream.anchor + gap
+        stream.position -= keepfrom - 1
     else
-        keeplen = 0
+        keepfrom = stream.position
+        keeplen = stream.available - keepfrom + 1
         stream.position = 1
     end
 
-    nb::Int = readbytes!(stream.source, stream.buffer, keeplen + 1, endof(stream.buffer))
-    stream.available = nb + keeplen
+    copy!(stream.buffer, 1, stream.buffer, keepfrom, keeplen)
+    nbytes = readbytes!(
+        stream.source,
+        stream.buffer,
+        keeplen + 1,
+        endof(stream.buffer))
+    stream.available = keeplen + nbytes
 
-    return nb
+    return nbytes
 end
 
-
-"""
-Return true if no further data is available from the stream.
-"""
 @inline function Base.eof(stream::BufferedInputStream)
-    return stream.position > stream.available && eof(stream.source)
+    if stream.position > stream.available
+        return fillbuffer!(stream) == 0
+    else
+        return false
+    end
 end
-
 
 """
 Advance the stream forward by n bytes.
@@ -93,11 +106,18 @@ Advance the stream forward by n bytes.
     return n0
 end
 
+function checkopen(stream::BufferedInputStream)
+    if isopen(stream)
+        return
+    end
+    error("buffered input stream is already closed")
+end
 
 """
 Return the next byte from the input stream without advancing the position.
 """
 @inline function peek(stream::BufferedInputStream)
+    checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())
@@ -117,6 +137,7 @@ read is limited to the minimum of `nb` and the remaining bytes in the buffer.
 function peekbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
                     nb=length(buffer))
+    checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())
@@ -127,11 +148,11 @@ function peekbytes!(stream::BufferedInputStream,
     return nb
 end
 
-
 """
 Read and return one byte from the input stream.
 """
 @inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
+    checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1
             throw(EOFError())
@@ -142,9 +163,9 @@ Read and return one byte from the input stream.
     return c
 end
 
-
 # Special purpose readuntil for plain bytes.
 function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
+    checkopen(stream)
     anchor!(stream)
     while true
         p0 = pointer(stream.buffer, stream.position)
@@ -167,18 +188,18 @@ function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
     return chunk
 end
 
-
-function Base.readbytes!(stream::BufferedInputStream,
-                         buffer::AbstractArray{UInt8},
-                         nb=length(buffer))
+function readbytes!(stream::BufferedInputStream,
+                    buffer::AbstractArray{UInt8},
+                    nb=length(buffer))
+    checkopen(stream)
     return readbytes!(stream, buffer, 1, nb)
 end
 
-
-function Base.readbytes!(stream::BufferedInputStream,
-                         buffer::AbstractArray{UInt8},
-                         from::Int,
-                         to::Int)
+function readbytes!(stream::BufferedInputStream,
+                    buffer::AbstractArray{UInt8},
+                    from::Int,
+                    to::Int)
+    checkopen(stream)
     oldbuflen = buflen = length(buffer)
     nb = to - from + 1
     while !eof(stream) && from <= to
@@ -204,6 +225,32 @@ function Base.readbytes!(stream::BufferedInputStream,
     return nb - (to - from + 1)
 end
 
+function Base.ismarked(stream::BufferedInputStream)
+    return stream.anchor > 0
+end
+
+function Base.mark(stream::BufferedInputStream)
+    stream.anchor = stream.position
+    return stream.anchor
+end
+
+function Base.unmark(stream::BufferedInputStream)
+    if !ismarked(stream)
+        return false
+    end
+    stream.anchor = 0
+    return true
+end
+
+function Base.reset(stream::BufferedInputStream)
+    if !ismarked(stream)
+        error("buffered stream is not marked")
+    end
+    anchor = stream.anchor
+    stream.position = anchor
+    unmark(stream)
+    return anchor
+end
 
 """
 Return true if the stream is anchored.
@@ -212,14 +259,12 @@ function isanchored(stream::BufferedInputStream)
     return stream.anchor > 0
 end
 
-
 """
 Set the buffer's anchor to its current position.
 """
 function anchor!(stream::BufferedInputStream)
     stream.anchor = stream.position
 end
-
 
 """
 Remove and return a buffer's anchor.
@@ -229,7 +274,6 @@ function upanchor!(stream::BufferedInputStream)
     stream.anchor = 0
     return anchor
 end
-
 
 """
 Copy and return a byte array from the anchor up to, but not including the
@@ -244,14 +288,9 @@ function takeanchored!(stream::BufferedInputStream)
     return chunk
 end
 
-
-"""
-Current position in the stream. Assumes the source has reportable position.
-"""
 function Base.position(stream::BufferedInputStream)
     return position(stream.source) - stream.available + stream.position - 1
 end
-
 
 """
 Move to the given position in the stream.
@@ -275,4 +314,24 @@ function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
             string("Can't seek in input stream with source of type ", T)))
         # TODO: Allow seeking forwards by just reading and discarding input
     end
+end
+
+function Base.isopen(stream::BufferedInputStream)
+    return !isempty(stream.buffer)
+end
+
+function Base.close(stream::BufferedInputStream)
+    if applicable(close, stream.source)
+        close(stream.source)
+    end
+    empty!(stream.buffer)
+    return
+end
+
+function Base.pointer(stream::BufferedInputStream, index::Integer=1)
+    return pointer(stream.buffer, stream.position + index - 1)
+end
+
+function available_bytes(stream::BufferedInputStream)
+    return stream.available - stream.position + 1
 end

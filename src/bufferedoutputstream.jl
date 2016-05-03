@@ -1,55 +1,69 @@
-
 """
-BufferedOutputStream{T} provides buffered writing to a sink of type T.
+`BufferedOutputStream{T}` provides buffered writing to a sink of type `T`.
 
-Any type T wrapped in a BufferedOutputStream must implement:
-    writebytes(sink::T, buffer::Vector{UInt8}, n::Int, eof::Bool)
+Any type `T` wrapped in a `BufferedOutputStream` must implement:
+
+    BufferedStreams.writebytes(sink::T, buffer::Vector{UInt8}, n::Int, eof::Bool)
 
 This function should:
-    * write n bytes from buffer, starting at the first position
-    * eof is true when there will be no more write operations to the sink, to
-      facilitate flushing or closing the sink, etc.
-    * `writebytes` should return the number of bytes written. This must be
-      `n` or 0. A return value of 0 indicates data should not be evicted from
-      the buffer.
 
-The buffer passed to this function never reallocated by BufferedOutputStream,
+* write `n` bytes from `buffer`, starting at the first position
+* `eof` is `true` when there will be no more write operations to `sink`, to
+  facilitate flushing or closing the sink, etc.
+* `writebytes` should return the number of bytes written. This must be
+  `n` or 0. A return value of 0 indicates data should not be evicted from
+  the buffer.
+
+The buffer passed to this function never reallocated by `BufferedOutputStream`,
 so it's safe to retain a reference to it to, for example, report some bytes as
 written but do so lazily or asynchronously.
 """
 type BufferedOutputStream{T} <: IO
     sink::T
-
     buffer::Vector{UInt8}
 
     # Position of the next unused byte in buffer
     position::Int
 end
 
-
-function BufferedOutputStream{T}(sink::T, buflen::Integer=100000)
-    return BufferedOutputStream{T}(sink, Array(UInt8, buflen), 1)
+function BufferedOutputStream{T}(sink::T, bufsize::Integer=default_buffer_size)
+    if bufsize ≤ 0
+        throw(ArgumentError("buffer size must be positive"))
+    end
+    return BufferedOutputStream{T}(sink, Vector{UInt8}(bufsize), 1)
 end
 
+function Base.show{T}(io::IO, stream::BufferedOutputStream{T})
+    bufsize = length(stream.buffer)
+    filled = stream.position
+    print(io,
+        "BufferedOutputStream{$T}(<",
+        _datasize(bufsize), " buffer, ",
+        round(Int, filled / bufsize * 100), "% filled>)")
+end
 
 """
 Flush all accumulated data from the buffer.
 """
 function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
-    nb = writebytes(stream.sink, stream.buffer, stream.position - 1, eof)
-    if nb == stream.position - 1
-        stream.position = 1
-    elseif nb != 0
+    buffered = stream.position - 1
+    written = writebytes(stream.sink, stream.buffer, buffered, eof)
+    if written != buffered
         error("BufferedOutputStream sink failed to write all data")
     end
+    stream.position = 1
     return
 end
 
+function checkopen(stream::BufferedOutputStream)
+    if isopen(stream)
+        return true
+    end
+    error("buffered output stream is already closed")
+end
 
-"""
-Read and return one byte.
-"""
 @inline function Base.write(stream::BufferedOutputStream, b::UInt8)
+    checkopen(stream)
     position = stream.position
     buffer = stream.buffer
     if position > length(buffer)
@@ -65,15 +79,26 @@ Read and return one byte.
     return 1
 end
 
-
-"""
-Write a byte array.
-"""
 function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
+    checkopen(stream)
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
-    append!(stream, data, 1, length(data))
+    #append!(stream, data, 1, length(data))
+    n_avail = endof(stream.buffer) - stream.position + 1
+    n = min(length(data), n_avail)
+    copy!(stream.buffer, stream.position, data, 1, n)
+    stream.position += n
+    written = n
+    while written < length(data)
+        flushbuffer!(stream)
+        n_avail = endof(stream.buffer) - stream.position + 1
+        @assert n_avail > 0
+        n = min(endof(data) - written, n_avail)
+        copy!(stream.buffer, stream.position, data, written + 1, n)
+        stream.position += n
+        written += n
+    end
+    return written
 end
-
 
 # TODO: This is too slow. I think this pointer/pointer_to_array trick may
 # allocate, so we should try to avoid it everywhere, but especially here.
@@ -107,19 +132,33 @@ function Base.append!(stream::BufferedOutputStream, data::Vector{UInt8},
     return writelen
 end
 
-
 function Base.flush(stream::BufferedOutputStream)
     flushbuffer!(stream)
     if applicable(flush, stream.sink)
         flush(stream.sink)
     end
-    return stream
+    return
 end
 
+function Base.isopen(stream::BufferedOutputStream)
+    return !isempty(stream.buffer)
+end
 
 function Base.close(stream::BufferedOutputStream)
-    flushbuffer!(stream, true)
     flush(stream)
     close(stream.sink)
+    empty!(stream.buffer)
+    return
 end
 
+function Base.eof(stream::BufferedOutputStream)
+    return true
+end
+
+function Base.pointer(stream::BufferedOutputStream, index::Integer=1)
+    return pointer(stream.buffer, stream.position + index - 1)
+end
+
+function available_bytes(stream::BufferedOutputStream)
+    return max(endof(stream.buffer) - stream.position + 1, 0)
+end

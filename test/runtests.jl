@@ -1,5 +1,5 @@
-
 using BufferedStreams
+using Compat
 
 if VERSION >= v"0.5-"
     using Base.Test
@@ -16,7 +16,7 @@ end
 #     force more buffer refills.
 
 @testset "BufferedInputStream" begin
-    @testset "readbytes" begin
+    @testset "read" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
         read_data = UInt8[]
@@ -24,13 +24,22 @@ end
             push!(read_data, read(stream, UInt8))
         end
         @test data == read_data
-        @test data == readbytes(BufferedInputStream(IOBuffer(data), 1024))
+        @test data == read(BufferedInputStream(IOBuffer(data), 1024))
 
         halfn = div(length(data), 2)
-        @test data[1:halfn] == readbytes(BufferedInputStream(IOBuffer(data), 1024), halfn)
+        @test data[1:halfn] == read(BufferedInputStream(IOBuffer(data), 1024), halfn)
     end
 
-    @testset "peekbytes" begin
+    @testset "peek" begin
+        stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
+        @test peek(stream) === 0x01
+        @test peek(stream) === 0x01
+        read(stream, UInt8)
+        @test peek(stream) === 0x02
+        @test peek(stream) === 0x02
+    end
+
+    @testset "peekbytes!" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
@@ -59,6 +68,26 @@ end
         read_data = Array{UInt8}(5)
         @test peekbytes!(stream, read_data) == 5
         @test data[1:5] == read_data
+
+        close(stream)
+        @test_throws Exception peekbytes!(stream, read_data)
+    end
+
+    @testset "readbytes!" begin
+        stream = BufferedInputStream(IOBuffer([0x01:0xff;]), 4)
+        @test !eof(stream)
+        out = zeros(UInt8, 2)
+        @test BufferedStreams.readbytes!(stream, out) === 2
+        @test out == [0x01, 0x02]
+        out = zeros(UInt8, 3)
+        @test BufferedStreams.readbytes!(stream, out) === 3
+        @test out == [0x03, 0x04, 0x05]
+        out = zeros(UInt8, 5)
+        @test BufferedStreams.readbytes!(stream, out) === 5
+        @test out == [0x06, 0x07, 0x08, 0x09, 0x0a]
+        @test !eof(stream)
+        @test read(stream) == [0x0b:0xff;]
+        @test eof(stream)
     end
 
     @testset "readuntil" begin
@@ -103,7 +132,28 @@ end
             push!(read_data, read(stream, UInt8))
         end
         @test data == read_data
-        @test data == readbytes(BufferedInputStream(data))
+        @test data == read(BufferedInputStream(data))
+    end
+
+    @testset "marks" begin
+        # very small buffer
+        stream = BufferedInputStream(IOBuffer([0x01:0xff;]), 2)
+        @test !ismarked(stream)
+        mark(stream)
+        @test ismarked(stream)
+        a = read(stream, UInt8)
+        b = read(stream, UInt8)
+        c = read(stream, UInt8)
+        reset(stream)
+        @test !ismarked(stream)
+        a′ = read(stream, UInt8)
+        b′ = read(stream, UInt8)
+        c′ = read(stream, UInt8)
+        @test (a, b, c) == (a′, b′, c′) == (0x01, 0x02, 0x03)
+        mark(stream)
+        @test unmark(stream)
+        @test !unmark(stream)
+        @test_throws ErrorException reset(stream)
     end
 
     @testset "anchors" begin
@@ -180,33 +230,80 @@ end
         @test all(Bool[test_seekforward(stream, position, offset)
                        for (position, offset) in zip(positions, offsets)])
     end
+
+    @testset "close" begin
+        iobuffer = IOBuffer([0x00, 0x01])
+        stream = BufferedInputStream(iobuffer)
+        @test isopen(stream)
+        @test isopen(iobuffer)
+        read(stream, UInt8)
+        close(stream)
+        @test !isopen(stream)
+        @test !isopen(iobuffer)
+        @test_throws Exception read(stream, UInt8)
+    end
+
+    @testset "iostream" begin
+        mktemp() do path, input
+            write(input, [0x01, 0x02, 0x03, 0x04, 0x05])
+            flush(input)
+            seekstart(input)
+
+            stream = BufferedInputStream(input, 2)
+            @test !eof(stream)
+            @test read(stream, UInt8) === 0x01
+            @test !eof(stream)
+            @test read(stream, UInt8) === 0x02
+            @test !eof(stream)
+            @test read(stream) == [0x03, 0x04, 0x05]
+            @test eof(stream)
+
+            @test isopen(stream)
+            @test isopen(input)
+            close(stream)
+            @test !isopen(stream)
+            @test !isopen(input)
+        end
+    end
 end
 
 
 @testset "BufferedOutputStream" begin
     @testset "write" begin
         data = rand(UInt8, 1000000)
+        stream1 = BufferedOutputStream()
         sink = IOBuffer()
-        stream = BufferedOutputStream(sink, 1024)
+        stream2 = BufferedOutputStream(sink, 1024)
         for c in data
-            write(stream, c)
+            write(stream1, c)
+            write(stream2, c)
         end
-        flush(stream)
+        flush(stream1)
+        flush(stream2)
+        @test takebuf_array(stream1) == data
         @test takebuf_array(sink) == data
-        close(stream)
+        close(stream1)
+        close(stream2)
         @test !isopen(sink)
     end
 
     @testset "arrays" begin
-        iobuf = IOBuffer()
-        stream = BufferedOutputStream()
+        expected = UInt8[]
+        stream1 = BufferedOutputStream()
+        sink = IOBuffer()
+        stream2 = BufferedOutputStream(sink, 1024)
         for _ in 1:1000
             data = rand(UInt8, rand(1:1000))
-            write(iobuf, data)
-            write(stream, data)
+            append!(expected, data)
+            write(stream1, data)
+            write(stream2, data)
         end
-        @test takebuf_array(stream) == takebuf_array(iobuf)
-        close(stream)
+        flush(stream1)
+        flush(stream2)
+        @test takebuf_array(stream1) == expected
+        @test takebuf_array(sink) == expected
+        close(stream1)
+        close(stream2)
     end
 
     @testset "takebuf_string" begin
@@ -230,6 +327,18 @@ end
         end
     end
 
+    @testset "close" begin
+        iobuffer = IOBuffer()
+        stream = BufferedOutputStream(iobuffer)
+        @test isopen(stream)
+        @test isopen(iobuffer)
+        write(stream, 0x00)
+        close(stream)
+        @test !isopen(stream)
+        @test !isopen(iobuffer)
+        @test_throws Exception write(stream, 0x00)
+    end
+
     @testset "iostream" begin
         mktemp() do path, out
             stream = BufferedOutputStream(out, 10)
@@ -251,4 +360,3 @@ end
         end
     end
 end
-
