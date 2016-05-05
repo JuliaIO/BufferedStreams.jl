@@ -22,7 +22,8 @@ type BufferedOutputStream{T} <: IO
     sink::T
     buffer::Vector{UInt8}
 
-    # Position of the next unused byte in buffer
+    # Position of the next unused byte in buffer;
+    # `position ≤ 0` indicates that the stream is closed.
     position::Int
 end
 
@@ -56,10 +57,9 @@ function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
 end
 
 function checkopen(stream::BufferedOutputStream)
-    if isopen(stream)
-        return true
+    if !isopen(stream)
+        error("buffered output stream is already closed")
     end
-    error("buffered output stream is already closed")
 end
 
 @inline function Base.write(stream::BufferedOutputStream, b::UInt8)
@@ -141,13 +141,19 @@ function Base.flush(stream::BufferedOutputStream)
 end
 
 function Base.isopen(stream::BufferedOutputStream)
-    return !isempty(stream.buffer)
+    return stream.position > 0
 end
 
 function Base.close(stream::BufferedOutputStream)
+    if !isopen(stream)
+        return
+    end
     flush(stream)
-    close(stream.sink)
+    if applicable(close, stream.sink)
+        close(stream.sink)
+    end
     empty!(stream.buffer)
+    stream.position = 0
     return
 end
 

@@ -16,7 +16,8 @@ type BufferedInputStream{T} <: IO
     source::T
     buffer::Vector{UInt8}
 
-    # Position of the next byte to be read in buffer.
+    # Position of the next byte to be read in buffer;
+    # `position ≤ 0` indicates that the stream is closed.
     position::Int
 
     # Number of bytes available in buffer.
@@ -107,10 +108,9 @@ Advance the stream forward by n bytes.
 end
 
 function checkopen(stream::BufferedInputStream)
-    if isopen(stream)
-        return
+    if !isopen(stream)
+        error("buffered input stream is already closed")
     end
-    error("buffered input stream is already closed")
 end
 
 """
@@ -317,13 +317,17 @@ function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
 end
 
 function Base.isopen(stream::BufferedInputStream)
-    return !isempty(stream.buffer)
+    return stream.position > 0
 end
 
 function Base.close(stream::BufferedInputStream)
+    if !isopen(stream)
+        return
+    end
     if applicable(close, stream.source)
         close(stream.source)
     end
+    stream.position = 0
     empty!(stream.buffer)
     return
 end

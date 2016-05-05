@@ -29,6 +29,7 @@ function Base.eof(stream::BufferedInputStream{EmptyStream})
 end
 
 function Base.read(stream::BufferedInputStream{EmptyStream}, ::Type{UInt8})
+    checkopen(stream)
     if eof(stream)
         throw(EOFError())
     end
@@ -38,6 +39,7 @@ function Base.read(stream::BufferedInputStream{EmptyStream}, ::Type{UInt8})
 end
 
 function Base.seek(stream::BufferedInputStream{EmptyStream}, pos::Integer)
+    checkopen(stream)
     upanchor!(stream)
     if 1 <= pos + 1 <= stream.available
         stream.position = pos + 1
@@ -51,8 +53,11 @@ end
 # ----------------------
 
 function BufferedOutputStream()
-    return BufferedOutputStream{EmptyStream}(
-        EmptyStream(), Vector{UInt8}(1024), 1)
+    return BufferedOutputStream(Vector{UInt8}(1024))
+end
+
+function BufferedOutputStream(data::Vector{UInt8})
+    return BufferedOutputStream{EmptyStream}(EmptyStream(), data, 1)
 end
 
 function flushbuffer!(::BufferedOutputStream{EmptyStream}, eof::Bool=false)
@@ -60,8 +65,9 @@ function flushbuffer!(::BufferedOutputStream{EmptyStream}, eof::Bool=false)
 end
 
 function Base.write(stream::BufferedOutputStream{EmptyStream}, byte::UInt8)
+    checkopen(stream)
     if stream.position > endof(stream.buffer)
-        resize!(stream.buffer, 2 * length(stream.buffer))
+        resize!(stream.buffer, max(2 * length(stream.buffer), 16))
     end
     stream.buffer[stream.position] = byte
     stream.position += 1
@@ -69,6 +75,7 @@ function Base.write(stream::BufferedOutputStream{EmptyStream}, byte::UInt8)
 end
 
 function Base.write(stream::BufferedOutputStream{EmptyStream}, data::Vector{UInt8})
+    checkopen(stream)
     n = length(data)
     n_avail = endof(stream.buffer) - stream.position + 1
     if n > n_avail

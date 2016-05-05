@@ -339,6 +339,20 @@ end
         @test_throws Exception write(stream, 0x00)
     end
 
+    @testset "vector sink" begin
+        sink = UInt8[]
+        stream = BufferedOutputStream(sink)
+        write(stream, 0x00)
+        write(stream, 0x01)
+        write(stream, 0x02)
+        flush(stream)
+        @test takebuf_array(stream) == [0x00, 0x01, 0x02]
+        @test isopen(stream)
+        close(stream)
+        @test !isopen(stream)
+        @test_throws Exception write(stream, 0x00)
+    end
+
     @testset "iostream" begin
         mktemp() do path, out
             stream = BufferedOutputStream(out, 10)
