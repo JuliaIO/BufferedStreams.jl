@@ -181,7 +181,10 @@ end
                 read(stream, UInt8)
                 i += 1
             end
-            error("nothing extracted")
+            if i == r.stop + 1
+                return takeanchored!(stream) == data[r]
+            end
+            error("nothing extracted (range: $r)")
         end
 
         @test all(Bool[test_anchor() for _ in 1:100])
