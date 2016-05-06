@@ -181,7 +181,10 @@ end
                 read(stream, UInt8)
                 i += 1
             end
-            error("nothing extracted")
+            if i == r.stop + 1
+                return takeanchored!(stream) == data[r]
+            end
+            error("nothing extracted (range: $r)")
         end
 
         @test all(Bool[test_anchor() for _ in 1:100])
@@ -336,6 +339,20 @@ end
         close(stream)
         @test !isopen(stream)
         @test !isopen(iobuffer)
+        @test_throws Exception write(stream, 0x00)
+    end
+
+    @testset "vector sink" begin
+        sink = UInt8[]
+        stream = BufferedOutputStream(sink)
+        write(stream, 0x00)
+        write(stream, 0x01)
+        write(stream, 0x02)
+        flush(stream)
+        @test takebuf_array(stream) == [0x00, 0x01, 0x02]
+        @test isopen(stream)
+        close(stream)
+        @test !isopen(stream)
         @test_throws Exception write(stream, 0x00)
     end
 
