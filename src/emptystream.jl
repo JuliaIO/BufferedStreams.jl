@@ -60,15 +60,16 @@ function BufferedOutputStream(data::Vector{UInt8})
     return BufferedOutputStream{EmptyStream}(EmptyStream(), data, 1)
 end
 
-function flushbuffer!(::BufferedOutputStream{EmptyStream}, eof::Bool=false)
+function flushbuffer!(stream::BufferedOutputStream{EmptyStream}, eof::Bool=false)
+    if available_bytes(stream) == 0
+        resize!(stream.buffer, max(nextpow2(2 * length(stream.buffer)), 16))
+    end
     return
 end
 
 function Base.write(stream::BufferedOutputStream{EmptyStream}, byte::UInt8)
     checkopen(stream)
-    if stream.position > endof(stream.buffer)
-        resize!(stream.buffer, max(2 * length(stream.buffer), 16))
-    end
+    flushbuffer!(stream)
     stream.buffer[stream.position] = byte
     stream.position += 1
     return 1
@@ -77,8 +78,7 @@ end
 function Base.write(stream::BufferedOutputStream{EmptyStream}, data::Vector{UInt8})
     checkopen(stream)
     n = length(data)
-    n_avail = endof(stream.buffer) - stream.position + 1
-    if n > n_avail
+    if n > available_bytes(stream)
         resize!(stream.buffer, nextpow2(n + stream.position - 1))
     end
     copy!(stream.buffer, stream.position, data, 1)
