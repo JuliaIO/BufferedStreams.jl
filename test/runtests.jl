@@ -97,7 +97,7 @@ end
         true_num_zeros = 0
         zero_positions = Int[]
         for (i, b) in enumerate(data)
-            if b == '\0'
+            if b == 0x00
                 push!(zero_positions, i)
                 true_num_zeros += 1
             end
