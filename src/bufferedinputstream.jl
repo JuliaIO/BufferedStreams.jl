@@ -107,7 +107,7 @@ Advance the stream forward by n bytes.
     return n0
 end
 
-function checkopen(stream::BufferedInputStream)
+@inline function checkopen(stream::BufferedInputStream)
     if !isopen(stream)
         error("buffered input stream is already closed")
     end
@@ -148,9 +148,6 @@ function peekbytes!(stream::BufferedInputStream,
     return nb
 end
 
-"""
-Read and return one byte from the input stream.
-"""
 @inline function Base.read(stream::BufferedInputStream, ::Type{UInt8})
     checkopen(stream)
     if stream.position > stream.available
@@ -161,6 +158,22 @@ Read and return one byte from the input stream.
     @inbounds c = stream.buffer[stream.position]
     stream.position += 1
     return c
+end
+
+# fast multi-byte data readers
+for T in [Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128]
+    @eval begin
+        @inline function Base.read(stream::BufferedInputStream, ::Type{$(T)})
+            checkopen(stream)
+            if !ensurebuffered!(stream, $(sizeof(T)))
+                throw(EOFError())
+            end
+            ptr::Ptr{$(T)} = pointer(stream)
+            ret = unsafe_load(ptr)
+            stream.position += $(sizeof(T))
+            return ret
+        end
+    end
 end
 
 # Special purpose readuntil for plain bytes.
@@ -191,7 +204,6 @@ end
 function readbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
                     nb=length(buffer))
-    checkopen(stream)
     return readbytes!(stream, buffer, 1, nb)
 end
 
@@ -336,6 +348,16 @@ function Base.pointer(stream::BufferedInputStream, index::Integer=1)
     return pointer(stream.buffer, stream.position + index - 1)
 end
 
-function available_bytes(stream::BufferedInputStream)
+@inline function available_bytes(stream::BufferedInputStream)
     return stream.available - stream.position + 1
+end
+
+@inline function ensurebuffered!(stream::BufferedInputStream, nb::Integer)
+    if available_bytes(stream) < nb
+        fillbuffer!(stream)
+        if available_bytes(stream) < nb
+            return false
+        end
+    end
+    return true
 end

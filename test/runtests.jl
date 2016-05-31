@@ -28,6 +28,21 @@ end
 
         halfn = div(length(data), 2)
         @test data[1:halfn] == read(BufferedInputStream(IOBuffer(data), 1024), halfn)
+
+        # read multi-byte data
+        buffer = IOBuffer()
+        write(buffer, UInt8(1))
+        write(buffer, UInt16(2))
+        write(buffer, UInt32(3))
+        write(buffer, UInt64(4))
+        write(buffer, UInt128(5))
+        seekstart(buffer)
+        stream = BufferedInputStream(buffer)
+        @test read(stream, UInt8) === UInt8(1)
+        @test read(stream, UInt16) === UInt16(2)
+        @test read(stream, UInt32) === UInt32(3)
+        @test read(stream, UInt64) === UInt64(4)
+        @test read(stream, UInt128) === UInt128(5)
     end
 
     @testset "peek" begin
