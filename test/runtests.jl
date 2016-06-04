@@ -283,6 +283,13 @@ end
             @test !isopen(input)
         end
     end
+
+    @testset "misc." begin
+        stream = BufferedInputStream(IOBuffer("foobar"), 10)
+        @test !BufferedStreams.ensurebuffered!(stream, 10)
+        @test ismatch(r"BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)", string(stream))
+        @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
+    end
 end
 
 
@@ -332,7 +339,6 @@ end
             write(stream, c)
             write(iobuf, c)
         end
-
         @test takebuf_string(stream) == takebuf_string(iobuf)
     end
 
@@ -390,5 +396,13 @@ end
             @test !isopen(out)
             @test stat(path).size == 14
         end
+    end
+
+    @testset "misc." begin
+        stream = BufferedOutputStream(IOBuffer(), 5)
+        @test eof(stream)
+        @test pointer(stream) == pointer(stream.buffer)
+        @test ismatch(r"BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)", string(stream))
+        @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end
