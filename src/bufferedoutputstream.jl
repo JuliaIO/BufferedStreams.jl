@@ -40,7 +40,7 @@ function Base.show{T}(io::IO, stream::BufferedOutputStream{T})
     bufsize = length(stream.buffer)
     filled = stream.position
     print(io,
-        "BufferedOutputStream{$T}(<",
+        summary(stream), "(<",
         _datasize(bufsize), " buffer, ",
         round(Int, filled / bufsize * 100), "% filled>)")
 end
