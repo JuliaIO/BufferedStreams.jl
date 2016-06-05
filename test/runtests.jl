@@ -292,6 +292,7 @@ end
     end
 end
 
+
 @testset "BufferedOutputStream" begin
     @testset "write" begin
         data = rand(UInt8, 1000000)
@@ -309,13 +310,6 @@ end
         close(stream1)
         close(stream2)
         @test !isopen(sink)
-
-        sink = IOBuffer()
-        stream = BufferedOutputStream(sink)
-        write(stream, 0x00)
-        write(stream, 0x01)
-        finalize(stream)
-        @test takebuf_array(sink) == [0x00, 0x01]
     end
 
     @testset "arrays" begin

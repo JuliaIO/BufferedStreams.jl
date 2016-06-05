@@ -31,9 +31,7 @@ function BufferedOutputStream{T}(sink::T, bufsize::Integer=default_buffer_size)
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
-    stream = BufferedOutputStream{T}(sink, Vector{UInt8}(bufsize), 1)
-    finalizer(stream, s -> isopen(s) && flush(s))
-    return stream
+    return BufferedOutputStream{T}(sink, Vector{UInt8}(bufsize), 1)
 end
 
 function Base.show{T}(io::IO, stream::BufferedOutputStream{T})
