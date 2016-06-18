@@ -304,11 +304,6 @@ function Base.position(stream::BufferedInputStream)
     return position(stream.source) - stream.available + stream.position - 1
 end
 
-"""
-Move to the given position in the stream.
-
-This will unset the current anchor if any.
-"""
 function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
     if applicable(seek, stream.source, pos)
         upanchor!(stream)
