@@ -14,6 +14,7 @@ export BufferedInputStream,
        takeanchored!
 
 using Compat
+import Compat: view
 
 # default buffer size is 128 KiB
 const default_buffer_size = 128 * 2^10
