@@ -216,10 +216,10 @@ end
         end
 
         stream = BufferedInputStream(data)
-        @test all(Bool[test_seek(stream, position) for position in positions])
+        @test all(Bool[test_seek(stream, p) for p in positions])
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @test all(Bool[test_seek(stream, position) for position in positions])
+        @test all(Bool[test_seek(stream, p) for p in positions])
     end
 
     @testset "seekforward" begin
@@ -230,14 +230,14 @@ end
 
         last = 1
         offsets = Int[]
-        for position in positions
-            push!(offsets, position - last)
-            last = position
+        for p in positions
+            push!(offsets, p - last)
+            last = p
         end
 
-        function test_seekforward(stream, position, offset)
+        function test_seekforward(stream, p, offset)
             seekforward(stream, offset)
-            peek(stream) == data[position]
+            peek(stream) == data[p]
         end
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
@@ -245,8 +245,8 @@ end
         @test_throws Exception seekforward(stream, -1)
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @test all(Bool[test_seekforward(stream, position, offset)
-                       for (position, offset) in zip(positions, offsets)])
+        @test all(Bool[test_seekforward(stream, p, offset)
+                       for (p, offset) in zip(positions, offsets)])
     end
 
     @testset "close" begin
