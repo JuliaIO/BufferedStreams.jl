@@ -87,13 +87,10 @@ end
     end
 end
 
-"""
-Advance the stream forward by n bytes.
-"""
-@inline function seekforward(stream::BufferedInputStream, n_::Integer)
+@inline function Base.skip(stream::BufferedInputStream, n_::Integer)
     n0 = n = convert(Int, n_)
     if n < 0
-        throw(ArgumentError("n must be non-negative in seekforward"))
+        throw(ArgumentError("n must be non-negative in skip(::BufferedInputStream, n)"))
     end
 
     while stream.position + n > stream.available + 1
