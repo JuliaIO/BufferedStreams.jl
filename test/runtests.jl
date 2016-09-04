@@ -222,7 +222,7 @@ end
         @test all(Bool[test_seek(stream, p) for p in positions])
     end
 
-    @testset "seekforward" begin
+    @testset "skip" begin
         n = 100000
         data = rand(UInt8, n)
         positions = rand(0:n-1, 1000)
@@ -235,17 +235,17 @@ end
             last = p
         end
 
-        function test_seekforward(stream, p, offset)
-            seekforward(stream, offset)
+        function test_skip(stream, p, offset)
+            skip(stream, offset)
             peek(stream) == data[p]
         end
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @test_throws Exception seekforward(stream, n + 1)
-        @test_throws Exception seekforward(stream, -1)
+        @test_throws Exception skip(stream, n + 1)
+        @test_throws Exception skip(stream, -1)
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
-        @test all(Bool[test_seekforward(stream, p, offset)
+        @test all(Bool[test_skip(stream, p, offset)
                        for (p, offset) in zip(positions, offsets)])
     end
 
