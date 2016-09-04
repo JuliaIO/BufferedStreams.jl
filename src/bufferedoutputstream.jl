@@ -37,10 +37,14 @@ end
 function Base.show{T}(io::IO, stream::BufferedOutputStream{T})
     bufsize = length(stream.buffer)
     filled = stream.position
-    print(io,
-        summary(stream), "(<",
-        _datasize(bufsize), " buffer, ",
-        round(Int, filled / bufsize * 100), "% filled>)")
+    if isopen(stream)
+        print(io,
+            summary(stream), "(<",
+            _datasize(bufsize), " buffer, ",
+            round(Int, filled / bufsize * 100), "% filled>)")
+    else
+        print(io, summary(stream), "(<closed>)")
+    end
 end
 
 """

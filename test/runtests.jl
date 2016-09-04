@@ -287,8 +287,16 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        @test ismatch(r"BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)", string(stream))
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        close(stream)
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
+
+        stream = BufferedOutputStream(IOBuffer(), 10)
+        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        close(stream)
+        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$", string(stream))
+        @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end
 
