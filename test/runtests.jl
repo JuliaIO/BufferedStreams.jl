@@ -291,12 +291,6 @@ end
         close(stream)
         @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
-
-        stream = BufferedOutputStream(IOBuffer(), 10)
-        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
-        close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$", string(stream))
-        @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end
 
@@ -410,7 +404,9 @@ end
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)
         @test pointer(stream) == pointer(stream.buffer)
-        @test ismatch(r"BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)", string(stream))
+        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        close(stream)
+        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end
