@@ -1,6 +1,8 @@
 using BufferedStreams
 using Compat
 
+import Compat.String
+
 if VERSION >= v"0.5-"
     using Base.Test
 else
@@ -307,8 +309,8 @@ end
         end
         flush(stream1)
         flush(stream2)
-        @test takebuf_array(stream1) == data
-        @test takebuf_array(sink) == data
+        @test take!(stream1) == data
+        @test take!(sink) == data
         close(stream1)
         close(stream2)
         @test !isopen(sink)
@@ -327,8 +329,8 @@ end
         end
         flush(stream1)
         flush(stream2)
-        @test takebuf_array(stream1) == expected
-        @test takebuf_array(sink) == expected
+        @test take!(stream1) == expected
+        @test take!(sink) == expected
         close(stream1)
         close(stream2)
     end
@@ -341,7 +343,7 @@ end
             write(stream, c)
             write(iobuf, c)
         end
-        @test takebuf_string(stream) == takebuf_string(iobuf)
+        @test String(take!((stream))) == String(take!((iobuf)))
     end
 
     @testset "write_result" begin
@@ -372,7 +374,7 @@ end
         write(stream, 0x01)
         write(stream, 0x02)
         flush(stream)
-        @test takebuf_array(stream) == [0x00, 0x01, 0x02]
+        @test take!(stream) == [0x00, 0x01, 0x02]
         @test isopen(stream)
         close(stream)
         @test !isopen(stream)

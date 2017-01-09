@@ -92,5 +92,5 @@ indicates data was processed but should not be evicted from the buffer.
 out = BufferedOutputStream()
 print(out, "Hello")
 print(out, " World")
-str = takebuf_string(out)
+str = String(take!(out))
 ```
