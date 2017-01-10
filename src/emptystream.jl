@@ -106,28 +106,6 @@ function Base.take!(stream::BufferedOutputStream{EmptyStream})
     return chunk
 end
 
-if VERSION < v"0.6-" 
-    function Base.takebuf_array(stream::BufferedOutputStream{EmptyStream})
-        # TODO: benchmark resizing stream.buffer, returning it, and replacing it
-        # with an zero-length array, which might be fast in the common case of
-        # building just one array/string.
-        chunk = stream.buffer[1:stream.position-1]
-        stream.position = 1
-        return chunk
-    end
-end
-
-if v"0.5-" < VERSION < v"0.6-"
-    function Base.takebuf_string(stream::BufferedOutputStream{EmptyStream})
-        return String(takebuf_array(stream))
-    end
-elseif VERSION < v"0.5-"
-    function Base.takebuf_string(stream::BufferedOutputStream{EmptyStream})
-        chunk = takebuf_array(stream)
-        return isvalid(ASCIIString, chunk) ? ASCIIString(chunk) : UTF8String(chunk)
-    end
-end
-
 function Base.empty!(stream::BufferedOutputStream{EmptyStream})
     return stream.position = 1
 end
