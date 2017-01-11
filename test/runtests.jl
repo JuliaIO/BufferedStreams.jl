@@ -1,7 +1,6 @@
 using BufferedStreams
 using Compat
-
-import Compat.String
+using Compat.String
 
 if VERSION >= v"0.5-"
     using Base.Test
