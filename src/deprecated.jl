@@ -1,11 +1,9 @@
-typealias EmptyStreamSource EmptyStream
-
-Base.@deprecate EmptyStreamSource EmptyStream
+Base.@deprecate_binding EmptyStreamSource EmptyStream
 Base.@deprecate seekforward(stream::BufferedInputStream, n::Integer) skip(stream, n)
 
 # emptystream.jl 
 
-if VERSION < v"0.6-" 
+if VERSION < v"0.6.0-dev.1256"
     function Base.takebuf_array(stream::BufferedOutputStream{EmptyStream})
         chunk = stream.buffer[1:stream.position-1]
         stream.position = 1
@@ -13,7 +11,7 @@ if VERSION < v"0.6-"
     end
 end
 
-if v"0.5-" < VERSION < v"0.6-"
+if v"0.5-" <= VERSION < v"0.6.0-dev.1256"
     function Base.takebuf_string(stream::BufferedOutputStream{EmptyStream})
         return String(takebuf_array(stream))
     end
