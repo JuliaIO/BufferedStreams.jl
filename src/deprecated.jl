@@ -15,7 +15,7 @@ if v"0.5" <= VERSION < v"0.6.0-dev.1256"
     function Base.takebuf_string(stream::BufferedOutputStream{EmptyStream})
         return String(takebuf_array(stream))
     end
-elseif VERSION < v"0.5-"
+elseif VERSION < v"0.5"
     function Base.takebuf_string(stream::BufferedOutputStream{EmptyStream})
         chunk = takebuf_array(stream)
         return isvalid(ASCIIString, chunk) ? ASCIIString(chunk) : UTF8String(chunk)
