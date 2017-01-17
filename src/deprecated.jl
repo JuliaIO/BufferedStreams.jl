@@ -11,7 +11,7 @@ if VERSION < v"0.6.0-dev.1256"
     end
 end
 
-if v"0.5-" < VERSION < v"0.6.0-dev.1256"
+if v"0.5-" <= VERSION < v"0.6.0-dev.1256"
     function Base.takebuf_string(stream::BufferedOutputStream{EmptyStream})
         return String(takebuf_array(stream))
     end
