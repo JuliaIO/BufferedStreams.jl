@@ -27,13 +27,16 @@ type BufferedInputStream{T} <: IO
     # If positive, preserve and move buffer[anchor:available]
     # when refilling the buffer.
     anchor::Int
+
+    # If `true`, buffered data `buffer[anchor:available]` is not shifted.
+    immobilized::Bool
 end
 
 function BufferedInputStream{T}(source::T, bufsize::Integer=default_buffer_size)
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
-    return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0)
+    return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0, false)
 end
 
 function Base.show{T}(io::IO, stream::BufferedInputStream{T})
@@ -43,7 +46,8 @@ function Base.show{T}(io::IO, stream::BufferedInputStream{T})
         print(io,
             summary(stream), "(<",
             _datasize(bufsize), " buffer, ",
-            round(Int, filled / bufsize * 100), "% filled>)")
+            round(Int, filled / bufsize * 100), "% filled",
+            stream.immobilized ? ", data immobilized" : "", ">)")
     else
         print(io, summary(stream), "(<closed>)")
     end
@@ -57,28 +61,36 @@ function fillbuffer!(stream::BufferedInputStream)
         return 0
     end
 
-    if ismarked(stream)
-        keepfrom = stream.anchor
-        keeplen = stream.available - keepfrom + 1
-        # expand the buffer if we are attempting to keep most of it
-        if keeplen > div(length(stream.buffer), 2)
-            resize!(stream.buffer, length(stream.buffer) * 2)
+    if !stream.immobilized
+        # move data to be kept
+        if stream.anchor > 0 && stream.available - stream.anchor + 1 > 0
+            shift = stream.anchor - 1
+            n = stream.available - shift
+            copy!(stream.buffer, 1, stream.buffer, shift + 1, n)
+            stream.position -= shift
+            stream.available -= shift
+            stream.anchor -= shift
+        elseif stream.available - stream.position + 1 > 0
+            shift = stream.position - 1
+            n = stream.available - shift
+            copy!(stream.buffer, 1, stream.buffer, shift + 1, n)
+            stream.position -= shift
+            stream.available -= shift
         end
-        stream.anchor = 1
-        stream.position -= keepfrom - 1
-    else
-        keepfrom = stream.position
-        keeplen = stream.available - keepfrom + 1
-        stream.position = 1
     end
 
-    copy!(stream.buffer, 1, stream.buffer, keepfrom, keeplen)
+    # resize the size of the buffer
+    margin = length(stream.buffer) - stream.available
+    if margin * 2 < length(stream.buffer)
+        resize!(stream.buffer, length(stream.buffer) * 2)
+    end
+
     nbytes = readbytes!(
         stream.source,
         stream.buffer,
-        keeplen + 1,
-        endof(stream.buffer))
-    stream.available = keeplen + nbytes
+        stream.available + 1,
+        length(stream.buffer))
+    stream.available += nbytes
 
     return nbytes
 end
