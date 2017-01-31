@@ -61,25 +61,7 @@ function fillbuffer!(stream::BufferedInputStream)
         return 0
     end
 
-    if !stream.immobilized
-        # move data to be kept
-        if stream.anchor > 0 && stream.available - stream.anchor + 1 > 0
-            shift = stream.anchor - 1
-            n = stream.available - shift
-            copy!(stream.buffer, 1, stream.buffer, shift + 1, n)
-            stream.position -= shift
-            stream.available -= shift
-            stream.anchor -= shift
-        elseif stream.available - stream.position + 1 > 0
-            shift = stream.position - 1
-            n = stream.available - shift
-            copy!(stream.buffer, 1, stream.buffer, shift + 1, n)
-            stream.position -= shift
-            stream.available -= shift
-        end
-    end
-
-    # resize the size of the buffer
+    shiftdata!(stream)
     margin = length(stream.buffer) - stream.available
     if margin * 2 < length(stream.buffer)
         resize!(stream.buffer, length(stream.buffer) * 2)
@@ -91,8 +73,30 @@ function fillbuffer!(stream::BufferedInputStream)
         stream.available + 1,
         length(stream.buffer))
     stream.available += nbytes
-
     return nbytes
+end
+
+# Shift data to be kept.
+function shiftdata!(stream::BufferedInputStream)
+    if stream.immobilized
+        return 0
+    else
+        if stream.anchor > 0 && stream.available - stream.anchor + 1 > 0
+            shift = stream.anchor - 1
+            n = stream.available - shift
+            copy!(stream.buffer, 1, stream.buffer, stream.anchor, n)
+            stream.anchor -= shift
+        elseif stream.available - stream.position + 1 > 0
+            shift = stream.position - 1
+            n = stream.available - shift
+            copy!(stream.buffer, 1, stream.buffer, stream.position, n)
+        else
+            shift = 0
+        end
+        stream.position -= shift
+        stream.available -= shift
+        return shift
+    end
 end
 
 @inline function Base.eof(stream::BufferedInputStream)
