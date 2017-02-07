@@ -17,7 +17,7 @@ Base.position(stream::BufferedOutputStream{EmptyStream}) = stream.position - 1
 # ---------------------
 
 function BufferedInputStream(data::Vector{UInt8}, len::Integer=endof(data))
-    return BufferedInputStream{EmptyStream}(EmptyStream(), data, 1, len, 0)
+    return BufferedInputStream{EmptyStream}(EmptyStream(), data, 1, len, 0, false)
 end
 
 function fillbuffer!(stream::BufferedInputStream{EmptyStream})

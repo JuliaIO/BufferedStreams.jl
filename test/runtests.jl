@@ -285,6 +285,24 @@ end
         end
     end
 
+    @testset "immobilized buffer" begin
+        stream = BufferedInputStream(IOBuffer("abcdefg"), 2)
+        stream.immobilized = false
+        @assert read(stream, UInt8) == UInt8('a')
+        mark(stream)
+        @assert read(stream, UInt8) == UInt8('b')
+        BufferedStreams.fillbuffer!(stream)
+        @test stream.buffer[1] == UInt8('b')
+
+        stream = BufferedInputStream(IOBuffer("abcdefg"), 2)
+        stream.immobilized = true
+        @assert read(stream, UInt8) == UInt8('a')
+        mark(stream)
+        @assert read(stream, UInt8) == UInt8('b')
+        BufferedStreams.fillbuffer!(stream)
+        @test stream.buffer[2] == UInt8('b')
+    end
+
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
