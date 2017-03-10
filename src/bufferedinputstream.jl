@@ -91,7 +91,9 @@ function shiftdata!(stream::BufferedInputStream)
             n = stream.available - shift
             copy!(stream.buffer, 1, stream.buffer, stream.position, n)
         else
-            shift = 0
+            # no data to be kept
+            @assert stream.position > stream.available
+            shift = stream.available
         end
         stream.position -= shift
         stream.available -= shift
