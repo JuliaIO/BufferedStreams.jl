@@ -64,6 +64,14 @@ end
         @test read(stream, UInt32) === UInt32(3)
         @test read(stream, UInt64) === UInt64(4)
         @test read(stream, UInt128) === UInt128(5)
+
+        # EOFError
+        stream = BufferedInputStream(IOBuffer())
+        @test_throws EOFError read(stream, UInt8)
+        @test_throws EOFError read(stream, UInt16)
+        @test_throws EOFError read(stream, UInt32)
+        @test_throws EOFError read(stream, UInt64)
+        @test_throws EOFError read(stream, UInt128)
     end
 
     @testset "peek" begin
