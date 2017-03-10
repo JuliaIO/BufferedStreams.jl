@@ -334,9 +334,14 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
+
+        stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
+        @test ismatch(r"KiB", repr(stream))
+
         close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", string(stream))
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", repr(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
