@@ -9,6 +9,26 @@ else
     const Test = BaseTestNext
 end
 
+immutable InfiniteStream <: IO
+    byte::UInt8
+end
+
+function Base.eof(stream::InfiniteStream)
+    return false
+end
+
+function Base.read(stream::InfiniteStream, ::Type{UInt8})
+    return stream.byte
+end
+
+if VERSION >= v"0.5-"
+    function Base.unsafe_read(stream::InfiniteStream, pointer::Ptr{UInt8}, n::UInt)
+        ccall(:memset, Void, (Ptr{Void}, Cint, Csize_t), pointer, stream.byte, n)
+        return nothing
+    end
+end
+
+
 # A few things that might not be obvious:
 #   * In a few places we wrap an array in an IOBuffer before wrapping it in a
 #     BufferedInputStream. This is to force the BufferedInputStream to read
@@ -310,6 +330,24 @@ end
         close(stream)
         @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
+    end
+
+    @testset "massive read" begin
+        byte = 0x34
+        bufsize = 1024
+        stream = BufferedInputStream(InfiniteStream(byte), bufsize)
+
+        # read byte by byte
+        ok = true
+        for i in 1:2^30
+            ok = ok && (read(stream, UInt8) == byte)
+        end
+        @test ok
+        @test length(stream.buffer) == 1024
+
+        # read in one shot
+        @test all(read(stream, 5 * bufsize) .== byte)
+        @test length(stream.buffer) == 1024
     end
 end
 
