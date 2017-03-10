@@ -66,6 +66,19 @@ end
         @test read(stream, UInt128) === UInt128(5)
     end
 
+    if VERSION > v"0.5-"
+        @testset "unsafe_read" begin
+            stream = BufferedInputStream(IOBuffer("abcdefg"), 3)
+            data = Vector{UInt8}(7)
+            unsafe_read(stream, pointer(data, 1), 1)
+            @test data[1] == UInt8('a')
+            unsafe_read(stream, pointer(data, 2), 2)
+            unsafe_read(stream, pointer(data, 4), 4)
+            @test data == b"abcdefg"
+            @test_throws EOFError unsafe_read(stream, pointer(data), 1)
+        end
+    end
+
     @testset "peek" begin
         stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
         @test peek(stream) === 0x01

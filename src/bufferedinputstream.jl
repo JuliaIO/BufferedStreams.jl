@@ -195,6 +195,24 @@ for T in [Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128]
     end
 end
 
+if VERSION > v"0.5-"
+    function Base.unsafe_read(stream::BufferedInputStream, ptr::Ptr{UInt8}, nb::UInt)
+        p = ptr
+        p_end = ptr + nb
+        while p < p_end
+            if ensurebuffered!(stream, 1)
+                n = min(p_end - p, available_bytes(stream))
+                ccall(:memcpy, Void, (Ptr{Void}, Ptr{Void}, Csize_t), p, pointer(stream), n)
+                p += n
+                stream.position += n
+            else
+                throw(EOFError())
+            end
+        end
+        return nothing
+    end
+end
+
 # Special purpose readuntil for plain bytes.
 function Base.readuntil(stream::BufferedInputStream, delim::UInt8)
     checkopen(stream)
