@@ -323,6 +323,14 @@ end
         @test stream.buffer[2] == UInt8('b')
     end
 
+    @testset "shiftdata!" begin
+        stream = BufferedInputStream(IOBuffer("abcdefg"), 2)
+        read(stream, 1)
+        @test BufferedStreams.shiftdata!(stream) > 0
+        read(stream, 2)
+        @test BufferedStreams.shiftdata!(stream) > 0
+    end
+
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
