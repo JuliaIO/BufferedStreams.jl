@@ -321,6 +321,14 @@ end
         @assert read(stream, UInt8) == UInt8('b')
         BufferedStreams.fillbuffer!(stream)
         @test stream.buffer[2] == UInt8('b')
+
+        stream = BufferedInputStream(IOBuffer("abcdefg"), 6)
+        stream.immobilized = true
+        data = Vector{UInt8}(7)
+        BufferedStreams.readbytes!(stream, data, 1, 3)
+        @test data[1:3] == b"abc"
+        BufferedStreams.readbytes!(stream, data, 4, 7)
+        @test data[4:7] == b"defg"
     end
 
     @testset "misc." begin

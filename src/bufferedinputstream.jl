@@ -228,32 +228,16 @@ end
 
 function readbytes!(stream::BufferedInputStream,
                     buffer::AbstractArray{UInt8},
-                    from::Int,
-                    to::Int)
-    checkopen(stream)
-    oldbuflen = buflen = length(buffer)
-    nb = to - from + 1
-    while !eof(stream) && from <= to
-        if stream.position > stream.available && fillbuffer!(stream) < 1
-            break
-        end
-
-        num_chunk_bytes = min(to - from + 1, stream.available - stream.position + 1)
-        if from + num_chunk_bytes > buflen
-            buflen = max(buflen + num_chunk_bytes, 2*buflen)
-            resize!(buffer, buflen)
-        end
-
-        copy!(buffer, from, stream.buffer, stream.position, num_chunk_bytes)
-        stream.position += num_chunk_bytes
-        from += num_chunk_bytes
+                    from::Int, to::Int)
+    p = from
+    while !eof(stream) && p ≤ to
+        @assert ensurebuffered!(stream, 1)
+        n = min(to - p + 1, stream.available - stream.position + 1)
+        copy!(buffer, p, stream.buffer, stream.position, n)
+        p += n
+        stream.position += n
     end
-
-    if buflen > oldbuflen
-        resize!(buffer, nb - (to - from + 1))
-    end
-
-    return nb - (to - from + 1)
+    return p - from
 end
 
 function Base.ismarked(stream::BufferedInputStream)
