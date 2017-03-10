@@ -276,10 +276,11 @@ end
         @test isopen(stream)
         @test isopen(iobuffer)
         read(stream, UInt8)
-        close(stream)
+        @test close(stream) === nothing
         @test !isopen(stream)
         @test !isopen(iobuffer)
         @test_throws Exception read(stream, UInt8)
+        @test close(stream) === nothing
     end
 
     @testset "iostream" begin
