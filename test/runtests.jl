@@ -64,6 +64,14 @@ end
         @test read(stream, UInt32) === UInt32(3)
         @test read(stream, UInt64) === UInt64(4)
         @test read(stream, UInt128) === UInt128(5)
+
+        # EOFError
+        stream = BufferedInputStream(IOBuffer())
+        @test_throws EOFError read(stream, UInt8)
+        @test_throws EOFError read(stream, UInt16)
+        @test_throws EOFError read(stream, UInt32)
+        @test_throws EOFError read(stream, UInt64)
+        @test_throws EOFError read(stream, UInt128)
     end
 
     @testset "peek" begin
@@ -276,10 +284,11 @@ end
         @test isopen(stream)
         @test isopen(iobuffer)
         read(stream, UInt8)
-        close(stream)
+        @test close(stream) === nothing
         @test !isopen(stream)
         @test !isopen(iobuffer)
         @test_throws Exception read(stream, UInt8)
+        @test close(stream) === nothing
     end
 
     @testset "iostream" begin
@@ -331,12 +340,25 @@ end
         @test data[4:7] == b"defg"
     end
 
+    @testset "shiftdata!" begin
+        stream = BufferedInputStream(IOBuffer("abcdefg"), 2)
+        read(stream, 1)
+        @test BufferedStreams.shiftdata!(stream) > 0
+        read(stream, 2)
+        @test BufferedStreams.shiftdata!(stream) > 0
+    end
+
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
+
+        stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
+        @test ismatch(r"KiB", repr(stream))
+
         close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", string(stream))
+        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", repr(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
