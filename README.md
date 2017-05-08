@@ -34,7 +34,7 @@ by calling `close` on the buffered stream.
 
 Input streams also have some tricks to make parsing applications easier. When
 parsing data incrementally, one must take care that partial matches are
-preverved across buffer refills. One easy way to do this is to copy it to a
+preserved across buffer refills. One easy way to do this is to copy it to a
 temporary buffer, but this unecessary copying can slow things down.
 
 Input streams instead support the notion of "anchoring", which instructs the
