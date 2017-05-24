@@ -96,6 +96,15 @@ end
         @test peek(stream) === 0x02
     end
 
+    @testset "nb_available" begin
+        stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
+        @test nb_available(stream) == 2
+        read(stream, 1)
+        @test nb_available(stream) == 1
+        read(stream, 1)
+        @test nb_available(stream) == 0
+    end
+
     @testset "peekbytes!" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)

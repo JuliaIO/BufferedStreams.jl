@@ -109,6 +109,14 @@ end
     end
 end
 
+@inline function Base.nb_available(stream::BufferedInputStream)
+    if eof(stream)
+        return 0
+    else
+        return stream.available - stream.position + 1
+    end
+end
+
 @inline function Base.skip(stream::BufferedInputStream, n_::Integer)
     n0 = n = convert(Int, n_)
     if n < 0
