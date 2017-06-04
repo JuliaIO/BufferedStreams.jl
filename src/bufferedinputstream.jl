@@ -63,7 +63,7 @@ function fillbuffer!(stream::BufferedInputStream)
 
     shiftdata!(stream)
     margin = length(stream.buffer) - stream.available
-    if margin * 2 < length(stream.buffer)
+    if margin == 0
         resize!(stream.buffer, length(stream.buffer) * 2)
     end
 
