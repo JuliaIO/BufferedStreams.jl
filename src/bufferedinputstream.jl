@@ -203,7 +203,7 @@ for T in [Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128]
     end
 end
 
-if VERSION > v"0.5-"
+if isdefined(Base, :unsafe_read)
     function Base.unsafe_read(stream::BufferedInputStream, ptr::Ptr{UInt8}, nb::UInt)
         p = ptr
         p_end = ptr + nb

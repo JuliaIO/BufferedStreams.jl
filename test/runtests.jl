@@ -21,7 +21,7 @@ function Base.read(stream::InfiniteStream, ::Type{UInt8})
     return stream.byte
 end
 
-if VERSION >= v"0.5-"
+if isdefined(Base, :unsafe_read)
     function Base.unsafe_read(stream::InfiniteStream, pointer::Ptr{UInt8}, n::UInt)
         ccall(:memset, Void, (Ptr{Void}, Cint, Csize_t), pointer, stream.byte, n)
         return nothing
@@ -74,7 +74,7 @@ end
         @test_throws EOFError read(stream, UInt128)
     end
 
-    if VERSION > v"0.5-"
+    if isdefined(Base, :unsafe_read)
         @testset "unsafe_read" begin
             stream = BufferedInputStream(IOBuffer("abcdefg"), 3)
             data = Vector{UInt8}(7)
