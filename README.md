@@ -27,8 +27,10 @@ you can use it like any other `IO` type.
 
 Calling `close` propagates to the underlying source object if applicable; once
 you wrap an `IO` object with a buffered stream, you can automatically close it
-by calling `close` on the buffered stream.
-
+by calling `close` on the buffered stream. Hence, if you are using a source that
+requires closing of an underlying system resource like file IO or socket, ensure
+you implement a `close` method in your source. This may be important for
+on-access locking file systems as in the MS Windows OS.
 
 ### Anchors
 
