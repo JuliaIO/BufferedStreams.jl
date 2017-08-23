@@ -412,6 +412,11 @@ end
         @test all(read(stream, 5 * bufsize) .== byte)
         @test length(stream.buffer) == 1024
     end
+
+    @testset "readavailable" begin
+        stream = BufferedInputStream(IOBuffer("some data"))
+        @test readavailable(stream) == b"some data"
+    end
 end
 
 

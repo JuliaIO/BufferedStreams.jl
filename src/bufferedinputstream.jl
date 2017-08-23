@@ -117,6 +117,10 @@ end
     end
 end
 
+@inline function Base.readavailable(stream::BufferedInputStream)
+    read(stream, nb_available(stream))
+end
+
 @inline function Base.skip(stream::BufferedInputStream, n_::Integer)
     n0 = n = convert(Int, n_)
     if n < 0
