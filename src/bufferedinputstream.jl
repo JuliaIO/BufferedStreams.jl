@@ -188,7 +188,7 @@ end
 end
 
 # fast multi-byte data readers
-for T in [Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128]
+for T in [Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128, Float16, Float32, Float64]
     @eval begin
         @inline function Base.read(stream::BufferedInputStream, ::Type{$(T)})
             checkopen(stream)
