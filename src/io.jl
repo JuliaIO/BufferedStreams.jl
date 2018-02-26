@@ -14,7 +14,7 @@ end
 # --------
 
 function readbytes!(source::IOStream, buffer::AbstractArray{UInt8}, from::Int, to::Int)
-    return Int(ccall(:ios_readall, UInt, (Ptr{Void}, Ptr{Void}, UInt), source.ios,
+    return Int(ccall(:ios_readall, UInt, (Ptr{Cvoid}, Ptr{Cvoid}, UInt), source.ios,
                      pointer(buffer, from), to - from + 1))
 end
 

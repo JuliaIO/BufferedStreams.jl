@@ -5,7 +5,7 @@
 `EmptyStream` is a dummy stream to allow a buffered stream to wrap an
 array without additional buffering.
 """
-immutable EmptyStream end
+struct EmptyStream end
 
 Base.close(::EmptyStream) = nothing
 
@@ -16,7 +16,7 @@ Base.position(stream::BufferedOutputStream{EmptyStream}) = stream.position - 1
 # Buffered input stream
 # ---------------------
 
-function BufferedInputStream(data::Vector{UInt8}, len::Integer=endof(data))
+function BufferedInputStream(data::Vector{UInt8}, len::Integer = endof(data))
     return BufferedInputStream{EmptyStream}(EmptyStream(), data, 1, len, 0, false)
 end
 
@@ -121,7 +121,7 @@ end
 @compat function Base.:(==)(a::BufferedOutputStream{EmptyStream},
                             b::BufferedOutputStream{EmptyStream})
     if a.position == b.position
-        return ccall(:memcmp, Cint, (Ptr{Void}, Ptr{Void}, Csize_t),
+        return ccall(:memcmp, Cint, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t),
                      a.buffer, b.buffer, a.position - 1) == 0
     else
         return false

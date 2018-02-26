@@ -18,7 +18,7 @@ The buffer passed to this function never reallocated by `BufferedOutputStream`,
 so it's safe to retain a reference to it to, for example, report some bytes as
 written but do so lazily or asynchronously.
 """
-type BufferedOutputStream{T} <: IO
+mutable struct BufferedOutputStream{T} <: IO
     sink::T
     buffer::Vector{UInt8}
 
@@ -27,14 +27,14 @@ type BufferedOutputStream{T} <: IO
     position::Int
 end
 
-function BufferedOutputStream{T}(sink::T, bufsize::Integer=default_buffer_size)
+function BufferedOutputStream(sink::T, bufsize::Integer=default_buffer_size) where T
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
     return BufferedOutputStream{T}(sink, Vector{UInt8}(bufsize), 1)
 end
 
-function Base.show{T}(io::IO, stream::BufferedOutputStream{T})
+function Base.show(io::IO, stream::BufferedOutputStream{T}) where T
     bufsize = length(stream.buffer)
     filled = stream.position
     if isopen(stream)
@@ -50,7 +50,7 @@ end
 """
 Flush all accumulated data from the buffer.
 """
-function flushbuffer!(stream::BufferedOutputStream, eof::Bool=false)
+function flushbuffer!(stream::BufferedOutputStream, eof::Bool = false)
     buffered = stream.position - 1
     written = writebytes(stream.sink, stream.buffer, buffered, eof)
     if written != buffered
@@ -165,7 +165,7 @@ function Base.eof(stream::BufferedOutputStream)
     return true
 end
 
-function Base.pointer(stream::BufferedOutputStream, index::Integer=1)
+function Base.pointer(stream::BufferedOutputStream, index::Integer = 1)
     return pointer(stream.buffer, stream.position + index - 1)
 end
 

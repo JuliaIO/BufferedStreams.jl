@@ -12,7 +12,7 @@ This function should:
 
 Failure to read any new data into the buffer is interpreted as eof.
 """
-type BufferedInputStream{T} <: IO
+mutable struct BufferedInputStream{T} <: IO
     source::T
     buffer::Vector{UInt8}
 
@@ -32,14 +32,14 @@ type BufferedInputStream{T} <: IO
     immobilized::Bool
 end
 
-function BufferedInputStream{T}(source::T, bufsize::Integer=default_buffer_size)
+function BufferedInputStream(source::T, bufsize::Integer = default_buffer_size) where T
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
     return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0, false)
 end
 
-function Base.show{T}(io::IO, stream::BufferedInputStream{T})
+function Base.show(io::IO, stream::BufferedInputStream{T}) where T
     bufsize = length(stream.buffer)
     filled = stream.available - stream.position + 1
     if isopen(stream)
@@ -333,7 +333,7 @@ function Base.position(stream::BufferedInputStream)
     return position(stream.source) - stream.available + stream.position - 1
 end
 
-function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
+function Base.seek(stream::BufferedInputStream{T}, pos::Integer) where T
     if applicable(seek, stream.source, pos)
         upanchor!(stream)
         source_position = position(stream.source)
