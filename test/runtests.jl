@@ -18,7 +18,7 @@ end
 
 if isdefined(Base, :unsafe_read)
     function Base.unsafe_read(stream::InfiniteStream, pointer::Ptr{UInt8}, n::UInt)
-        ccall(:memset, Void, (Ptr{Cvoid}, Cint, Csize_t), pointer, stream.byte, n)
+        ccall(:memset, Cvoid, (Ptr{Cvoid}, Cint, Csize_t), pointer, stream.byte, n)
         return nothing
     end
 end
