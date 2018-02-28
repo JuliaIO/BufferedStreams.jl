@@ -379,14 +379,19 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        @test contains(repr(stream), r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$")
+        repr_regex = ifelse(
+            VERSION >= v"0.7-",
+            r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$",
+            r"^BufferedStreams.BufferedInputStream{.*}\(<.* \d+% filled>\)$"
+        )
+        @test contains(repr(stream), repr_regex)
 
         stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
-        @test contains(repr(stream), r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$")
+        @test contains(repr(stream), repr_regex)
         @test contains(repr(stream), r"KiB")
 
         close(stream)
-        @test contains(repr(stream), r"^BufferedInputStream{.*}\(<closed>\)$")
+        @test contains(repr(stream), ifelse(VERSION >= v"0.7-", r"^BufferedInputStream{.*}\(<closed>\)$", r"^BufferedStreams.BufferedInputStream{.*}\(<closed>\)$"))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
