@@ -1,5 +1,10 @@
 using BufferedStreams
 using Compat
+if VERSION > v"0.7-"
+    using Test
+else
+    using Base.Test
+end
 
 struct InfiniteStream <: IO
     byte::UInt8
