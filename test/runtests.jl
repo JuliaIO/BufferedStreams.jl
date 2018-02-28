@@ -113,7 +113,7 @@ end
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
-        read_data = Array{UInt8}(1000)
+        read_data = Array{UInt8}(uninitialized, 1000)
         @test peekbytes!(stream, read_data, 1000) == 1000
         @test data[1:1000] == read_data
         # Check that we read the bytes we just peeked, i.e. that the position
@@ -129,7 +129,7 @@ end
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
-        read_data = Array{UInt8}(2000)
+        read_data = Array{UInt8}(uninitialized, 2000)
         @test peekbytes!(stream, read_data, 2000) == 1024
         # Note that we truncate at buffer size, as
         @test data[1:1024] == read_data[1:1024]
@@ -377,14 +377,14 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
+        @test contains(repr(stream), r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$")
 
         stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
-        @test ismatch(r"KiB", repr(stream))
+        @test contains(repr(stream), r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$")
+        @test contains(repr(stream), r"KiB")
 
         close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", repr(stream))
+        @test contains(repr(stream), r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$")
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
