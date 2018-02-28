@@ -57,6 +57,9 @@ end
         write(buffer, UInt32(3))
         write(buffer, UInt64(4))
         write(buffer, UInt128(5))
+        write(buffer, Float16(6))
+        write(buffer, Float32(7))
+        write(buffer, Float64(8))
         seekstart(buffer)
         stream = BufferedInputStream(buffer)
         @test read(stream, UInt8) === UInt8(1)
@@ -64,6 +67,9 @@ end
         @test read(stream, UInt32) === UInt32(3)
         @test read(stream, UInt64) === UInt64(4)
         @test read(stream, UInt128) === UInt128(5)
+        @test read(stream, Float16) === Float16(6)
+        @test read(stream, Float32) === Float32(7)
+        @test read(stream, Float64) === Float64(8)
 
         # EOFError
         stream = BufferedInputStream(IOBuffer())
@@ -72,6 +78,9 @@ end
         @test_throws EOFError read(stream, UInt32)
         @test_throws EOFError read(stream, UInt64)
         @test_throws EOFError read(stream, UInt128)
+        @test_throws EOFError read(stream, Float16)
+        @test_throws EOFError read(stream, Float32)
+        @test_throws EOFError read(stream, Float64)
     end
 
     if isdefined(Base, :unsafe_read)
