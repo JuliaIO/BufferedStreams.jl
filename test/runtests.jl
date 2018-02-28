@@ -1,8 +1,5 @@
 using BufferedStreams
 using Compat
-using Compat.String
-
-using Compat.Test
 
 struct InfiniteStream <: IO
     byte::UInt8
