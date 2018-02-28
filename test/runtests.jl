@@ -2,14 +2,9 @@ using BufferedStreams
 using Compat
 using Compat.String
 
-if VERSION >= v"0.5-"
-    using Base.Test
-else
-    using BaseTestNext
-    const Test = BaseTestNext
-end
+using Compat.Test
 
-immutable InfiniteStream <: IO
+struct InfiniteStream <: IO
     byte::UInt8
 end
 
@@ -23,7 +18,7 @@ end
 
 if isdefined(Base, :unsafe_read)
     function Base.unsafe_read(stream::InfiniteStream, pointer::Ptr{UInt8}, n::UInt)
-        ccall(:memset, Void, (Ptr{Void}, Cint, Csize_t), pointer, stream.byte, n)
+        ccall(:memset, Void, (Ptr{Cvoid}, Cint, Csize_t), pointer, stream.byte, n)
         return nothing
     end
 end

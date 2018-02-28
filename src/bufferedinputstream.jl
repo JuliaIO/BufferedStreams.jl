@@ -210,7 +210,7 @@ if isdefined(Base, :unsafe_read)
         while p < p_end
             if ensurebuffered!(stream, 1)
                 n = min(p_end - p, available_bytes(stream))
-                ccall(:memcpy, Void, (Ptr{Void}, Ptr{Void}, Csize_t), p, pointer(stream), n)
+                ccall(:memcpy, Void, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t), p, pointer(stream), n)
                 p += n
                 stream.position += n
             else
