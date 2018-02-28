@@ -36,6 +36,5 @@ include("bufferedinputstream.jl")
 include("bufferedoutputstream.jl")
 include("emptystream.jl")
 include("io.jl")
-include("deprecated.jl")
 
 end # module BufferedStreams

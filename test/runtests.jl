@@ -524,9 +524,9 @@ end
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)
         @test pointer(stream) == pointer(stream.buffer)
-        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        @test contains(string(stream), ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<.* \d+% filled>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$"))
         close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$", string(stream))
+        @test contains(string(stream), ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<closed>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$"))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end
