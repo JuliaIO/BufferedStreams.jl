@@ -89,7 +89,7 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     #append!(stream, data, 1, length(data))
     n_avail = endof(stream.buffer) - stream.position + 1
     n = min(length(data), n_avail)
-    copy!(stream.buffer, stream.position, data, 1, n)
+    copyto!(stream.buffer, stream.position, data, 1, n)
     stream.position += n
     written = n
     while written < length(data)
@@ -97,7 +97,7 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
         n_avail = endof(stream.buffer) - stream.position + 1
         @assert n_avail > 0
         n = min(endof(data) - written, n_avail)
-        copy!(stream.buffer, stream.position, data, written + 1, n)
+        copyto!(stream.buffer, stream.position, data, written + 1, n)
         stream.position += n
         written += n
     end
@@ -125,7 +125,7 @@ function Base.append!(stream::BufferedOutputStream, data::Vector{UInt8},
         end
 
         num_chunk_bytes = min(stop - start + 1, buflen - position + 1)
-        copy!(buffer, position, data, start, num_chunk_bytes)
+        copyto!(buffer, position, data, start, num_chunk_bytes)
         start += num_chunk_bytes
         position += num_chunk_bytes
         if start > stop

@@ -81,7 +81,7 @@ function Base.write(stream::BufferedOutputStream{EmptyStream}, data::Vector{UInt
     if n > available_bytes(stream)
         resize!(stream.buffer, nextpow2(n + stream.position - 1))
     end
-    copy!(stream.buffer, stream.position, data, 1)
+    copyto!(stream.buffer, stream.position, data, 1)
     stream.position += n
     return n
 end
@@ -93,7 +93,7 @@ end
     if stream.position + n > length(stream.buffer)
         resize!(stream.buffer, max(n, max(1024, 2 * length(stream.buffer))))
     end
-    copy!(stream.buffer, stream.position, data, start, n)
+    copyto!(stream.buffer, stream.position, data, start, n)
     stream.position += n
 end
 

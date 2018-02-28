@@ -81,7 +81,7 @@ end
     if isdefined(Base, :unsafe_read)
         @testset "unsafe_read" begin
             stream = BufferedInputStream(IOBuffer("abcdefg"), 3)
-            data = Vector{UInt8}(7)
+            data = Vector{UInt8}(uninitialized, 7)
             unsafe_read(stream, pointer(data, 1), 1)
             @test data[1] == UInt8('a')
             unsafe_read(stream, pointer(data, 2), 2)
@@ -135,7 +135,7 @@ end
         @test data[1:1024] == read_data[1:1024]
 
         # Check that we only read up to the buffer size
-        read_data = Array{UInt8}(5)
+        read_data = Array{UInt8}(uninitialized, 5)
         @test peekbytes!(stream, read_data) == 5
         @test data[1:5] == read_data
 
@@ -359,7 +359,7 @@ end
 
         stream = BufferedInputStream(IOBuffer("abcdefg"), 6)
         stream.immobilized = true
-        data = Vector{UInt8}(7)
+        data = Vector{UInt8}(uninitialized, 7)
         BufferedStreams.readbytes!(stream, data, 1, 3)
         @test data[1:3] == b"abc"
         BufferedStreams.readbytes!(stream, data, 4, 7)

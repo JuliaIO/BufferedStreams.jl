@@ -84,12 +84,12 @@ function shiftdata!(stream::BufferedInputStream)
         if stream.anchor > 0 && stream.available - stream.anchor + 1 > 0
             shift = stream.anchor - 1
             n = stream.available - shift
-            copy!(stream.buffer, 1, stream.buffer, stream.anchor, n)
+            copyto!(stream.buffer, 1, stream.buffer, stream.anchor, n)
             stream.anchor -= shift
         elseif stream.available - stream.position + 1 > 0
             shift = stream.position - 1
             n = stream.available - shift
-            copy!(stream.buffer, 1, stream.buffer, stream.position, n)
+            copyto!(stream.buffer, 1, stream.buffer, stream.position, n)
         else
             # no data to be kept
             @assert stream.position > stream.available
@@ -171,7 +171,7 @@ function peekbytes!(stream::BufferedInputStream,
         end
     end
     nb = min(nb, stream.available - stream.position + 1)
-    copy!(buffer, 1, stream.buffer, stream.position, nb)
+    copyto!(buffer, 1, stream.buffer, stream.position, nb)
     return nb
 end
 
@@ -259,7 +259,7 @@ function readbytes!(stream::BufferedInputStream,
     while !eof(stream) && p ≤ to
         @assert ensurebuffered!(stream, 1)
         n = min(to - p + 1, stream.available - stream.position + 1)
-        copy!(buffer, p, stream.buffer, stream.position, n)
+        copyto!(buffer, p, stream.buffer, stream.position, n)
         p += n
         stream.position += n
     end
