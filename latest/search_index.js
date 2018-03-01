@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "BufferedStreams",
     "category": "section",
-    "text": "(Image: Diagram of locks)Release Documentation Maintainers\n[![][release-img]][release-url] [![][license-img]][license-url] [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url] ![][maintainer-a-img]"
+    "text": "(Image: Diagram of locks)Release Documentation Maintainers\n(Image: ) (Image: ) (Image: ) (Image: ) (Image: )"
 },
 
 {
@@ -37,7 +37,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Testing",
     "category": "section",
-    "text": "BufferedStreams.jl is tested against Julia 0.6 and current 0.7-dev on Linux, OS X, and Windows.PackageEvaluator Latest Build Status\n[![][pkg-0.6-img]][pkg-0.6-url] [![][pkg-0.7-img]][pkg-0.7-url] [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url]"
+    "text": "BufferedStreams.jl is tested against Julia 0.6 and current 0.7-dev on Linux, OS X, and Windows.PackageEvaluator Latest Build Status\n(Image: ) (Image: ) (Image: ) (Image: ) (Image: )"
 },
 
 {
@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Contributing and Questions",
     "category": "section",
-    "text": "We appreciate contributions from users including reporting bugs, fixing issues, improving performance and adding new features. Please go to the contributing section of the documentation for more information.If you have a question about contributing or using this package, you are encouraged to use the Bio category of the Julia discourse site.[release-img]: https://img.shields.io/github/release/BioJulia/BufferedStreams.jl.svg [release-url]: https://github.com/BioJulia/BufferedStreams.jl/releases/latest[license-img]: https://img.shields.io/badge/license-MIT-green.svg [license-url]: https://github.com/BioJulia/BufferedStreams.jl/blob/master/LICENSE[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg [docs-latest-url]: https://biojulia.github.io/BufferedStreams.jl/latest [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg [docs-stable-url]: https://biojulia.github.io/BufferedStreams.jl/stable[maintainer-a-img]: https://img.shields.io/badge/BioJulia%20Maintainer-Ward9250-orange.svg[pkg-0.6-img]: https://pkg.julialang.org/badges/BufferedStreams_0.6.svg [pkg-0.6-url]: https://pkg.julialang.org/detail/BufferedStreams [pkg-0.7-img]: https://pkg.julialang.org/badges/BufferedStreams_0.7.svg [pkg-0.7-url]: https://pkg.julialang.org/detail/BufferedStreams[travis-img]: https://img.shields.io/travis/BioJulia/BufferedStreams.jl/master.svg?label=Linux+/+macOS [travis-url]: https://travis-ci.org/BioJulia/BufferedStreams.jl[appveyor-img]: https://img.shields.io/appveyor/ci/BioJulia/BufferedStreams.jl/master.svg?label=Windows [appveyor-url]: https://ci.appveyor.com/project/Ward9250/bufferedstreams-jl/branch/master[codecov-img]: https://codecov.io/gh/BioJulia/BufferedStreams.jl/branch/master/graph/badge.svg [codecov-url]: https://codecov.io/gh/BioJulia/BufferedStreams.jl"
+    "text": "We appreciate contributions from users including reporting bugs, fixing issues, improving performance and adding new features. Please go to the contributing section of the documentation for more information.If you have a question about contributing or using this package, you are encouraged to use the Bio category of the Julia discourse site."
 },
 
 {
@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Input Streams",
     "title": "BufferedInputStream",
     "category": "section",
-    "text": "BufferedInputStream(open(filename)) # wrap an IOStream\nBufferedInputStream(rand(UInt8, 100)) # wrap a byte array\nnothing # hideBufferedInputStream wraps a source. A source can be any IO object, but more specifically it can be any type T that implements a function:BufferedStreams.readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)This function should write new data to buffer starting at position from and not exceeding position to and return the number of bytes written.BufferedInputStream is itself an IO type and implements the source type so you can use it like any other IO type.Calling close propagates to the underlying source object if applicable; once you wrap an IO object with a buffered stream, you can automatically close it by calling close on the buffered stream. Hence, if you are using a source that requires closing of an underlying system resource like file IO or socket, ensure you implement a close method in your source. This may be important for on-access locking file systems as in the MS Windows OS."
+    "text": "using BufferedStreamsBufferedInputStream(open(filename)) # wrap an IOStream\nBufferedInputStream(rand(UInt8, 100)) # wrap a byte array\nnothing # hideBufferedInputStream wraps a source. A source can be any IO object, but more specifically it can be any type T that implements a function:BufferedStreams.readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)This function should write new data to buffer starting at position from and not exceeding position to and return the number of bytes written.BufferedInputStream is itself an IO type and implements the source type so you can use it like any other IO type.Calling close propagates to the underlying source object if applicable; once you wrap an IO object with a buffered stream, you can automatically close it by calling close on the buffered stream. Hence, if you are using a source that requires closing of an underlying system resource like file IO or socket, ensure you implement a close method in your source. This may be important for on-access locking file systems as in the MS Windows OS."
 },
 
 {
