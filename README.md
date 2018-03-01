@@ -1,98 +1,75 @@
-[![Diagram of locks](https://biojulia.github.io/BufferedStreams.jl/locks.gif)](http://www.pc.gc.ca/eng/lhn-nhs/qc/annedebellevue/natcul/natcul2/b.aspx)
-[![Build Status](https://travis-ci.org/BioJulia/BufferedStreams.jl.svg?branch=master)](https://travis-ci.org/BioJulia/BufferedStreams.jl)
-[![codecov.io](http://codecov.io/github/BioJulia/BufferedStreams.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/BufferedStreams.jl?branch=master)
+# BufferedStreams
+
+[![Diagram of locks](https://biojulia.github.io/BufferedStreams.jl/locks.gif)](https://www.pc.gc.ca/eng/lhn-nhs/qc/annedebellevue/natcul/natcul2/b.aspx)
+
+| **Release**                                                     | **Documentation**                                                               | **Maintainers**                             |
+|:---------------------------------------------------------------:|:-------------------------------------------------------------------------------:|:-------------------------------------------:|
+| [![][release-img]][release-url] [![][license-img]][license-url] | [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url] | ![][maintainer-a-img] |
+
+
+## Description
 
 BufferedStreams provides buffering for IO operations. It can wrap any IO type
 automatically making incremental reading and writing faster.
 
 
-## BufferedInputStream
+## Installation
 
 ```julia
-BufferedInputStream(open(filename)) # wrap an IOStream
-BufferedInputStream(rand(UInt8, 100)) # wrap a byte array
+using Pkg
+add("BufferedStreams")
+# Pkg.add("BufferedStreams") on julia v0.6-
 ```
 
-`BufferedInputStream` wraps a source. A source can be any `IO` object, but more
-specifically it can be any type `T` that implements a function:
-```julia
-BufferedStreams.readbytes!(source::T, buffer::Vector{UInt8}, from::Int, to::Int)
-```
-
-This function should write new data to `buffer` starting at position `from` and
-not exceeding position `to` and return the number of bytes written.
-
-`BufferedInputStream` is itself an `IO` type and implements the source type so
-you can use it like any other `IO` type.
-
-Calling `close` propagates to the underlying source object if applicable; once
-you wrap an `IO` object with a buffered stream, you can automatically close it
-by calling `close` on the buffered stream. Hence, if you are using a source that
-requires closing of an underlying system resource like file IO or socket, ensure
-you implement a `close` method in your source. This may be important for
-on-access locking file systems as in the MS Windows OS.
-
-### Anchors
-
-Input streams also have some tricks to make parsing applications easier. When
-parsing data incrementally, one must take care that partial matches are
-preserved across buffer refills. One easy way to do this is to copy it to a
-temporary buffer, but this unecessary copying can slow things down.
-
-Input streams instead support the notion of "anchoring", which instructs the
-stream to save the current position in the buffer. If the buffer gets refilled,
-then any data in the buffer including or following that position gets shifted
-over to make room. When the match is finished, one can then call `takeanchored!`
-return an array of the bytes from the anchored position to the currened
-position, or `upanchor!` to return the index of the anchored position in the
-buffer.
-
-```julia
-# print all numbers literals from a stream
-stream = BufferedInputStream(source)
-while !eof(stream)
-    b = peek(stream)
-    if '1' <= b <= '9'
-        if !isanchored(stream)
-            anchor!(stream)
-        end
-    elseif isanchored(stream)
-        println(ASCIIString(takeanchored!(stream)))
-    end
-
-    read(stream, UInt8)
-end
-```
+If you are interested in the cutting edge of the development, please check out
+the master branch to try new features before release.
 
 
-## BufferedOutputStream
+## Testing
 
-```julia
-stream = BufferedOutputStream(open(filename, "w")) # wrap an IOStream
-```
+BufferedStreams.jl is tested against Julia `0.6` and current `0.7-dev` on Linux, OS X, and Windows.
 
-`BufferedOutputStream` is the converse to `BufferedInputStream`, wrapping a sink
-type. It also works on any writable `IO` type, as well the more specific sink
-interface:
-
-```julia
-writebytes(sink::T, buffer::Vector{UInt8}, n::Int, eof::Bool)
-```
-
-This function should consume the first `n` bytes of `buffer`. The `eof` argument
-is used to indicate that there will be no more input to consume. It should
-return the number of bytes written, which must be `n` or 0. A return value of 0
-indicates data was processed but should not be evicted from the buffer.
+| **PackageEvaluator**                                            | **Latest Build Status**                                                                                |
+|:---------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------:|
+| [![][pkg-0.6-img]][pkg-0.6-url] [![][pkg-0.7-img]][pkg-0.7-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url]        |
 
 
-### `BufferedOutputStream` as an alternative to `IOBuffer`
+## Contributing and Questions
 
-`BufferedOutputStream` can be used as a simpler and often faster alternative to
-`IOBuffer` for incrementally building strings.
+We appreciate contributions from users including reporting bugs, fixing issues,
+improving performance and adding new features.
+Please go to the [contributing section of the documentation](https://biojulia.net/Contributing/latest)
+for more information.
 
-```julia
-out = BufferedOutputStream()
-print(out, "Hello")
-print(out, " World")
-str = String(take!(out))
-```
+If you have a question about
+contributing or using this package, you are encouraged to use the
+[Bio category of the Julia discourse
+site](https://discourse.julialang.org/c/domain/bio).
+
+
+[release-img]: https://img.shields.io/github/release/BioJulia/BufferedStreams.jl.svg
+[release-url]: https://github.com/BioJulia/BufferedStreams.jl/releases/latest
+
+[license-img]: https://img.shields.io/badge/license-MIT-green.svg
+[license-url]: https://github.com/BioJulia/BufferedStreams.jl/blob/master/LICENSE
+
+[docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
+[docs-latest-url]: https://biojulia.github.io/BufferedStreams.jl/latest
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://biojulia.github.io/BufferedStreams.jl/stable
+
+[maintainer-a-img]: https://img.shields.io/badge/BioJulia%20Maintainer-Ward9250-orange.svg
+
+[pkg-0.6-img]: https://pkg.julialang.org/badges/BufferedStreams_0.6.svg
+[pkg-0.6-url]: https://pkg.julialang.org/detail/BufferedStreams
+[pkg-0.7-img]: https://pkg.julialang.org/badges/BufferedStreams_0.7.svg
+[pkg-0.7-url]: https://pkg.julialang.org/detail/BufferedStreams
+
+[travis-img]: https://img.shields.io/travis/BioJulia/BufferedStreams.jl/master.svg?label=Linux+/+macOS
+[travis-url]: https://travis-ci.org/BioJulia/BufferedStreams.jl
+
+[appveyor-img]: https://img.shields.io/appveyor/ci/BioJulia/BufferedStreams.jl/master.svg?label=Windows
+[appveyor-url]: https://ci.appveyor.com/project/Ward9250/bufferedstreams-jl/branch/master
+
+[codecov-img]: https://codecov.io/gh/BioJulia/BufferedStreams.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/BioJulia/BufferedStreams.jl
