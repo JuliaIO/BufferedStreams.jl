@@ -1,15 +1,12 @@
 using BufferedStreams
 using Compat
-using Compat.String
-
-if VERSION >= v"0.5-"
-    using Base.Test
+if VERSION > v"0.7-"
+    using Test
 else
-    using BaseTestNext
-    const Test = BaseTestNext
+    using Base.Test
 end
 
-immutable InfiniteStream <: IO
+struct InfiniteStream <: IO
     byte::UInt8
 end
 
@@ -23,7 +20,7 @@ end
 
 if isdefined(Base, :unsafe_read)
     function Base.unsafe_read(stream::InfiniteStream, pointer::Ptr{UInt8}, n::UInt)
-        ccall(:memset, Void, (Ptr{Void}, Cint, Csize_t), pointer, stream.byte, n)
+        ccall(:memset, Cvoid, (Ptr{Cvoid}, Cint, Csize_t), pointer, stream.byte, n)
         return nothing
     end
 end
@@ -86,7 +83,7 @@ end
     if isdefined(Base, :unsafe_read)
         @testset "unsafe_read" begin
             stream = BufferedInputStream(IOBuffer("abcdefg"), 3)
-            data = Vector{UInt8}(7)
+            data = Vector{UInt8}(uninitialized, 7)
             unsafe_read(stream, pointer(data, 1), 1)
             @test data[1] == UInt8('a')
             unsafe_read(stream, pointer(data, 2), 2)
@@ -118,7 +115,7 @@ end
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
-        read_data = Array{UInt8}(1000)
+        read_data = Array{UInt8}(uninitialized, 1000)
         @test peekbytes!(stream, read_data, 1000) == 1000
         @test data[1:1000] == read_data
         # Check that we read the bytes we just peeked, i.e. that the position
@@ -134,13 +131,13 @@ end
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
-        read_data = Array{UInt8}(2000)
+        read_data = Array{UInt8}(uninitialized, 2000)
         @test peekbytes!(stream, read_data, 2000) == 1024
         # Note that we truncate at buffer size, as
         @test data[1:1024] == read_data[1:1024]
 
         # Check that we only read up to the buffer size
-        read_data = Array{UInt8}(5)
+        read_data = Array{UInt8}(uninitialized, 5)
         @test peekbytes!(stream, read_data) == 5
         @test data[1:5] == read_data
 
@@ -364,7 +361,7 @@ end
 
         stream = BufferedInputStream(IOBuffer("abcdefg"), 6)
         stream.immobilized = true
-        data = Vector{UInt8}(7)
+        data = Vector{UInt8}(uninitialized, 7)
         BufferedStreams.readbytes!(stream, data, 1, 3)
         @test data[1:3] == b"abc"
         BufferedStreams.readbytes!(stream, data, 4, 7)
@@ -382,14 +379,19 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
+        repr_regex = ifelse(
+            VERSION >= v"0.7-",
+            r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$",
+            r"^BufferedStreams.BufferedInputStream{.*}\(<.* \d+% filled>\)$"
+        )
+        @test contains(repr(stream), repr_regex)
 
         stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<.* \d+% filled>\)$", repr(stream))
-        @test ismatch(r"KiB", repr(stream))
+        @test contains(repr(stream), repr_regex)
+        @test contains(repr(stream), r"KiB")
 
         close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedInputStream{.*}\(<closed>\)$", repr(stream))
+        @test contains(repr(stream), ifelse(VERSION >= v"0.7-", r"^BufferedInputStream{.*}\(<closed>\)$", r"^BufferedStreams.BufferedInputStream{.*}\(<closed>\)$"))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
@@ -522,9 +524,9 @@ end
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)
         @test pointer(stream) == pointer(stream.buffer)
-        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
+        @test contains(string(stream), ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<.* \d+% filled>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$"))
         close(stream)
-        @test ismatch(r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$", string(stream))
+        @test contains(string(stream), ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<closed>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$"))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end

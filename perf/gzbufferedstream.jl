@@ -10,7 +10,7 @@ type GZBufferedStream <: IO
         buf = Array(UInt8, io.buf_size)
 
         len = ccall((:gzread, GZip._zlib), Int32,
-            (Ptr{Void}, Ptr{Void}, UInt32), io.gz_file, buf, io.buf_size)
+            (Ptr{Cvoid}, Ptr{Cvoid}, UInt32), io.gz_file, buf, io.buf_size)
 
         new(io, buf, len, 1)
     end
@@ -24,7 +24,7 @@ Base.close(io::GZBufferedStream) = close(io.io)
 
     if io.ptr == io.len+1 #No more data
         io.len = ccall((:gzread, GZip._zlib), Int32,
-            (Ptr{Void}, Ptr{Void}, UInt32), io.io.gz_file, io.buf, io.io.buf_size)
+            (Ptr{Cvoid}, Ptr{Cvoid}, UInt32), io.io.gz_file, io.buf, io.io.buf_size)
         io.ptr = 1
     end
     c
@@ -53,5 +53,3 @@ end
 ##random contains 10^8 rand(UInt8)s
 #@time run(`gunzip -k -f random.gz`) #255 ms
 #@time bench() #168 ms
-
-

@@ -12,7 +12,7 @@ This function should:
 
 Failure to read any new data into the buffer is interpreted as eof.
 """
-type BufferedInputStream{T} <: IO
+mutable struct BufferedInputStream{T} <: IO
     source::T
     buffer::Vector{UInt8}
 
@@ -32,14 +32,14 @@ type BufferedInputStream{T} <: IO
     immobilized::Bool
 end
 
-function BufferedInputStream{T}(source::T, bufsize::Integer=default_buffer_size)
+function BufferedInputStream(source::T, bufsize::Integer = default_buffer_size) where T
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
-    return BufferedInputStream{T}(source, Vector{UInt8}(bufsize), 1, 0, 0, false)
+    return BufferedInputStream{T}(source, Vector{UInt8}(uninitialized, bufsize), 1, 0, 0, false)
 end
 
-function Base.show{T}(io::IO, stream::BufferedInputStream{T})
+function Base.show(io::IO, stream::BufferedInputStream{T}) where T
     bufsize = length(stream.buffer)
     filled = stream.available - stream.position + 1
     if isopen(stream)
@@ -84,12 +84,12 @@ function shiftdata!(stream::BufferedInputStream)
         if stream.anchor > 0 && stream.available - stream.anchor + 1 > 0
             shift = stream.anchor - 1
             n = stream.available - shift
-            copy!(stream.buffer, 1, stream.buffer, stream.anchor, n)
+            copyto!(stream.buffer, 1, stream.buffer, stream.anchor, n)
             stream.anchor -= shift
         elseif stream.available - stream.position + 1 > 0
             shift = stream.position - 1
             n = stream.available - shift
-            copy!(stream.buffer, 1, stream.buffer, stream.position, n)
+            copyto!(stream.buffer, 1, stream.buffer, stream.position, n)
         else
             # no data to be kept
             @assert stream.position > stream.available
@@ -171,7 +171,7 @@ function peekbytes!(stream::BufferedInputStream,
         end
     end
     nb = min(nb, stream.available - stream.position + 1)
-    copy!(buffer, 1, stream.buffer, stream.position, nb)
+    copyto!(buffer, 1, stream.buffer, stream.position, nb)
     return nb
 end
 
@@ -210,7 +210,7 @@ if isdefined(Base, :unsafe_read)
         while p < p_end
             if ensurebuffered!(stream, 1)
                 n = min(p_end - p, available_bytes(stream))
-                ccall(:memcpy, Void, (Ptr{Void}, Ptr{Void}, Csize_t), p, pointer(stream), n)
+                ccall(:memcpy, Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t), p, pointer(stream), n)
                 p += n
                 stream.position += n
             else
@@ -259,7 +259,7 @@ function readbytes!(stream::BufferedInputStream,
     while !eof(stream) && p ≤ to
         @assert ensurebuffered!(stream, 1)
         n = min(to - p + 1, stream.available - stream.position + 1)
-        copy!(buffer, p, stream.buffer, stream.position, n)
+        copyto!(buffer, p, stream.buffer, stream.position, n)
         p += n
         stream.position += n
     end
@@ -333,7 +333,7 @@ function Base.position(stream::BufferedInputStream)
     return position(stream.source) - stream.available + stream.position - 1
 end
 
-function Base.seek{T}(stream::BufferedInputStream{T}, pos::Integer)
+function Base.seek(stream::BufferedInputStream{T}, pos::Integer) where T
     if applicable(seek, stream.source, pos)
         upanchor!(stream)
         source_position = position(stream.source)
