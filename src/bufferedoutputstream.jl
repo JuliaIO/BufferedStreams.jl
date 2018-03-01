@@ -31,7 +31,7 @@ function BufferedOutputStream(sink::T, bufsize::Integer=default_buffer_size) whe
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
-    return BufferedOutputStream{T}(sink, Vector{UInt8}(bufsize), 1)
+    return BufferedOutputStream{T}(sink, Vector{UInt8}(uninitialized, bufsize), 1)
 end
 
 function Base.show(io::IO, stream::BufferedOutputStream{T}) where T
@@ -94,7 +94,7 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     written = n
     while written < length(data)
         flushbuffer!(stream)
-        n_avail = endof(stream.buffer) - stream.position + 1
+        n_avail = lastindex(stream.buffer) - stream.position + 1
         @assert n_avail > 0
         n = min(endof(data) - written, n_avail)
         copyto!(stream.buffer, stream.position, data, written + 1, n)

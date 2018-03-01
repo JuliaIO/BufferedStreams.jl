@@ -6,18 +6,16 @@ end
 ```
 # BufferedOutputStream
 
-```@example
+```julia
 stream = BufferedOutputStream(open(filename, "w")) # wrap an IOStream
-nothing # hide
 ```
 
 `BufferedOutputStream` is the converse to `BufferedInputStream`, wrapping a sink
 type. It also works on any writable `IO` type, as well the more specific sink
 interface:
 
-```@example
+```julia
 writebytes(sink::T, buffer::Vector{UInt8}, n::Int, eof::Bool)
-nothing # hide
 ```
 
 This function should consume the first `n` bytes of `buffer`. The `eof` argument
@@ -31,7 +29,7 @@ indicates data was processed but should not be evicted from the buffer.
 `BufferedOutputStream` can be used as a simpler and often faster alternative to
 `IOBuffer` for incrementally building strings.
 
-```@example
+```julia
 out = BufferedOutputStream()
 print(out, "Hello")
 print(out, " World")

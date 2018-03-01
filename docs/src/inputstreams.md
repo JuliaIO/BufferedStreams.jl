@@ -6,10 +6,10 @@ end
 ```
 # BufferedInputStream
 
-```@example
+
+```julia
 BufferedInputStream(open(filename)) # wrap an IOStream
 BufferedInputStream(rand(UInt8, 100)) # wrap a byte array
-nothing # hide
 ```
 
 `BufferedInputStream` wraps a source. A source can be any `IO` object, but more
@@ -46,7 +46,7 @@ return an array of the bytes from the anchored position to the currened
 position, or `upanchor!` to return the index of the anchored position in the
 buffer.
 
-```@example
+```julia
 # print all numbers literals from a stream
 stream = BufferedInputStream(source)
 while !eof(stream)
@@ -58,9 +58,6 @@ while !eof(stream)
     elseif isanchored(stream)
         println(ASCIIString(takeanchored!(stream)))
     end
-
     read(stream, UInt8)
-
-    nothing # hide
 end
 ```
