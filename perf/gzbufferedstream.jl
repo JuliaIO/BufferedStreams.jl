@@ -1,6 +1,6 @@
 using GZip
 
-type GZBufferedStream <: IO
+mutable struct GZBufferedStream <: IO
     io::GZipStream
     buf::Vector{UInt8}
     len::Int
