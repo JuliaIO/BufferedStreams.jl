@@ -36,7 +36,7 @@ function BufferedInputStream(source::T, bufsize::Integer = default_buffer_size) 
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
-    return BufferedInputStream{T}(source, Vector{UInt8}(uninitialized, bufsize), 1, 0, 0, false)
+    return BufferedInputStream{T}(source, Vector{UInt8}(undef, bufsize), 1, 0, 0, false)
 end
 
 function Base.show(io::IO, stream::BufferedInputStream{T}) where T

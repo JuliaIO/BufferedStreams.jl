@@ -31,7 +31,7 @@ function BufferedOutputStream(sink::T, bufsize::Integer=default_buffer_size) whe
     if bufsize ≤ 0
         throw(ArgumentError("buffer size must be positive"))
     end
-    return BufferedOutputStream{T}(sink, Vector{UInt8}(uninitialized, bufsize), 1)
+    return BufferedOutputStream{T}(sink, Vector{UInt8}(undef, bufsize), 1)
 end
 
 function Base.show(io::IO, stream::BufferedOutputStream{T}) where T
@@ -87,7 +87,7 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
     checkopen(stream)
     # TODO: find a way to write large vectors directly to the sink bypassing the buffer
     #append!(stream, data, 1, length(data))
-    n_avail = endof(stream.buffer) - stream.position + 1
+    n_avail = lastindex(stream.buffer) - stream.position + 1
     n = min(length(data), n_avail)
     copyto!(stream.buffer, stream.position, data, 1, n)
     stream.position += n
@@ -96,7 +96,7 @@ function Base.write(stream::BufferedOutputStream, data::Vector{UInt8})
         flushbuffer!(stream)
         n_avail = lastindex(stream.buffer) - stream.position + 1
         @assert n_avail > 0
-        n = min(endof(data) - written, n_avail)
+        n = min(lastindex(data) - written, n_avail)
         copyto!(stream.buffer, stream.position, data, written + 1, n)
         stream.position += n
         written += n
@@ -170,5 +170,5 @@ function Base.pointer(stream::BufferedOutputStream, index::Integer = 1)
 end
 
 function available_bytes(stream::BufferedOutputStream)
-    return max(endof(stream.buffer) - stream.position + 1, 0)
+    return max(lastindex(stream.buffer) - stream.position + 1, 0)
 end
