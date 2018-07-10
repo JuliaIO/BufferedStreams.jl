@@ -25,11 +25,14 @@ function _datasize(nbytes)
     k = 1
     for suffix in [" KiB", " MiB", " GiB", " TiB"]
         if nbytes < 1024^(k+1)
-            return string(floor(nbytes / 1024^k, 1), suffix)
+            # Note: The base keyword argument is needed until
+            # https://github.com/JuliaLang/Compat.jl/pull/537 lands or
+            # Compat is dropped.
+            return string(Compat.floor(nbytes / 1024^k, digits = 1, base = 10), suffix)
         end
         k += 1
     end
-    return string(floor(nbytes / 1024^k, 1), " PiB")
+    return string(Compat.floor(nbytes / 1024^k, digits = 1, base = 10), " PiB")
 end
 
 include("bufferedinputstream.jl")

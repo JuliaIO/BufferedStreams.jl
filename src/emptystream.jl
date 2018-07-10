@@ -53,7 +53,7 @@ end
 # ----------------------
 
 function BufferedOutputStream()
-    return BufferedOutputStream(Vector{UInt8}(uninitialized, 1024))
+    return BufferedOutputStream(Vector{UInt8}(undef, 1024))
 end
 
 function BufferedOutputStream(data::Vector{UInt8})
