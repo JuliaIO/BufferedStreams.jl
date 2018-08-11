@@ -1,4 +1,3 @@
-__precompile__()
 
 module BufferedStreams
 
@@ -11,8 +10,6 @@ export BufferedInputStream,
        anchor!,
        upanchor!,
        takeanchored!
-
-using Compat
 
 # default buffer size is 128 KiB
 const default_buffer_size = 128 * 2^10
