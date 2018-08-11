@@ -118,7 +118,7 @@ end
 end
 
 @inline function Base.readavailable(stream::BufferedInputStream)
-    read(stream, nb_available(stream))
+    read(stream, bytesavailable(stream))
 end
 
 @inline function Base.skip(stream::BufferedInputStream, n_::Integer)
