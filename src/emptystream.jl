@@ -121,8 +121,7 @@ function Base.length(stream::BufferedOutputStream{EmptyStream})
     return stream.position - 1
 end
 
-function Base.:(==)(a::BufferedOutputStream{EmptyStream},
-                            b::BufferedOutputStream{EmptyStream})
+function Base.:(==)(a::BufferedOutputStream{EmptyStream}, b::BufferedOutputStream{EmptyStream})
     if a.position == b.position
         return ccall(:memcmp, Cint, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t),
                      a.buffer, b.buffer, a.position - 1) == 0
