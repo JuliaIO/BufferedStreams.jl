@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "BufferedStreams",
     "category": "section",
-    "text": "(Image: Diagram of locks)Release Documentation Maintainers\n(Image: ) (Image: ) (Image: ) (Image: ) (Image: )"
+    "text": "(Image: )  (Image: )  (Image: )  (Image: ) (Image: Lifecycle) (Image: Chat on Discord)"
 },
 
 {
@@ -29,7 +29,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "using Pkg\nadd(\"BufferedStreams\")\n# Pkg.add(\"BufferedStreams\") on julia v0.6-If you are interested in the cutting edge of the development, please check out the master branch to try new features before release."
+    "text": "using Pkg\nadd(\"BufferedStreams\")\n# Pkg.add(\"BufferedStreams\") on julia prior to v0.7If you are interested in the cutting edge of the development, please check out the master branch to try new features before release."
 },
 
 {
@@ -37,15 +37,39 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Testing",
     "category": "section",
-    "text": "BufferedStreams.jl is tested against Julia 0.6 and current 0.7-dev on Linux, OS X, and Windows.PackageEvaluator Latest Build Status\n(Image: ) (Image: ) (Image: ) (Image: ) (Image: )"
+    "text": "BufferedStreams is tested against Julia 0.7 and 1.0 on Linux, OS X, and Windows.PackageEvaluator Latest Build Status\n(Image: ) (Image: ) (Image: ) (Image: ) (Image: )"
 },
 
 {
-    "location": "index.html#Contributing-and-Questions-1",
+    "location": "index.html#Contributing-1",
     "page": "Home",
-    "title": "Contributing and Questions",
+    "title": "Contributing",
     "category": "section",
-    "text": "We appreciate contributions from users including reporting bugs, fixing issues, improving performance and adding new features. Please go to the contributing section of the documentation for more information.If you have a question about contributing or using this package, you are encouraged to use the Bio category of the Julia discourse site."
+    "text": "We appreciate contributions from users including reporting bugs, fixing issues, improving performance and adding new features.Take a look at the CONTRIBUTING file provided with every BioJulia package package for detailed contributor and maintainer guidelines."
+},
+
+{
+    "location": "index.html#Financial-contributions-1",
+    "page": "Home",
+    "title": "Financial contributions",
+    "category": "section",
+    "text": "We also welcome financial contributions in full transparency on our open collective. Anyone can file an expense. If the expense makes sense for the development of the community, it will be \"merged\" in the ledger of our open collective by the core contributors and the person who filed the expense will be reimbursed."
+},
+
+{
+    "location": "index.html#Backers-and-Sponsors-1",
+    "page": "Home",
+    "title": "Backers & Sponsors",
+    "category": "section",
+    "text": "Thank you to all our backers and sponsors!Love our work and community? Become a backer.(Image: backers)Does your company use BioJulia? Help keep BioJulia feature rich and healthy by sponsoring the project Your logo will show up here with a link to your website.(Image: ) (Image: ) (Image: ) (Image: ) (Image: ) (Image: ) (Image: ) (Image: ) (Image: ) (Image: )"
+},
+
+{
+    "location": "index.html#Questions?-1",
+    "page": "Home",
+    "title": "Questions?",
+    "category": "section",
+    "text": "If you have a question about contributing or using BioJulia software, come on over and chat to us on Discord, or you can try the Bio category of the Julia discourse site."
 },
 
 {
