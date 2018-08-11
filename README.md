@@ -1,4 +1,4 @@
-# <img align="right" src="./locks.gif" width="30%" /> BufferedStreams
+# BufferedStreams
 
 [![](https://img.shields.io/github/release/BioJulia/BufferedStreams.jl.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/releases/latest) 
 [![](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/blob/master/LICENSE) 
