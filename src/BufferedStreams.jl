@@ -22,7 +22,7 @@ function _datasize(nbytes)
     k = 1
     for suffix in [" KiB", " MiB", " GiB", " TiB"]
         if nbytes < 1024^(k+1)
-            return string(floor(nbytes / 1024^k, 1), suffix)
+            return string(floor(nbytes / 1024^k; digits = 1), suffix)
         end
         k += 1
     end

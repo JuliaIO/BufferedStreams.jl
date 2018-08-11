@@ -78,7 +78,7 @@ end
     if isdefined(Base, :unsafe_read)
         @testset "unsafe_read" begin
             stream = BufferedInputStream(IOBuffer("abcdefg"), 3)
-            data = Vector{UInt8}(uninitialized, 7)
+            data = Vector{UInt8}(undef, 7)
             unsafe_read(stream, pointer(data, 1), 1)
             @test data[1] == UInt8('a')
             unsafe_read(stream, pointer(data, 2), 2)
@@ -97,20 +97,20 @@ end
         @test peek(stream) === 0x02
     end
 
-    @testset "nb_available" begin
+    @testset "bytesavailable" begin
         stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
-        @test nb_available(stream) == 2
+        @test bytesavailable(stream) == 2
         read(stream, 1)
-        @test nb_available(stream) == 1
+        @test bytesavailable(stream) == 1
         read(stream, 1)
-        @test nb_available(stream) == 0
+        @test bytesavailable(stream) == 0
     end
 
     @testset "peekbytes!" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
-        read_data = Array{UInt8}(uninitialized, 1000)
+        read_data = Array{UInt8}(undef, 1000)
         @test peekbytes!(stream, read_data, 1000) == 1000
         @test data[1:1000] == read_data
         # Check that we read the bytes we just peeked, i.e. that the position
@@ -126,13 +126,13 @@ end
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
-        read_data = Array{UInt8}(uninitialized, 2000)
+        read_data = Array{UInt8}(undef, 2000)
         @test peekbytes!(stream, read_data, 2000) == 1024
         # Note that we truncate at buffer size, as
         @test data[1:1024] == read_data[1:1024]
 
         # Check that we only read up to the buffer size
-        read_data = Array{UInt8}(uninitialized, 5)
+        read_data = Array{UInt8}(undef, 5)
         @test peekbytes!(stream, read_data) == 5
         @test data[1:5] == read_data
 
@@ -356,7 +356,7 @@ end
 
         stream = BufferedInputStream(IOBuffer("abcdefg"), 6)
         stream.immobilized = true
-        data = Vector{UInt8}(uninitialized, 7)
+        data = Vector{UInt8}(undef, 7)
         BufferedStreams.readbytes!(stream, data, 1, 3)
         @test data[1:3] == b"abc"
         BufferedStreams.readbytes!(stream, data, 4, 7)
@@ -374,19 +374,15 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        repr_regex = ifelse(
-            VERSION >= v"0.7-",
-            r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$",
-            r"^BufferedStreams.BufferedInputStream{.*}\(<.* \d+% filled>\)$"
-        )
-        @test contains(repr(stream), repr_regex)
+        repr_regex = r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$"
+        @test occursin(repr_regex, repr(stream))
 
         stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
-        @test contains(repr(stream), repr_regex)
-        @test contains(repr(stream), r"KiB")
+        @test occursin(repr_regex, repr(stream))
+        @test occursin(r"KiB", repr(stream))
 
         close(stream)
-        @test contains(repr(stream), ifelse(VERSION >= v"0.7-", r"^BufferedInputStream{.*}\(<closed>\)$", r"^BufferedStreams.BufferedInputStream{.*}\(<closed>\)$"))
+        @test occursin(r"^BufferedInputStream{.*}\(<closed>\)$", repr(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
@@ -519,9 +515,9 @@ end
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)
         @test pointer(stream) == pointer(stream.buffer)
-        @test contains(string(stream), ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<.* \d+% filled>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$"))
+        @test occursin(r"^BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
         close(stream)
-        @test contains(string(stream), ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<closed>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$"))
+        @test occursin(r"^BufferedOutputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end
