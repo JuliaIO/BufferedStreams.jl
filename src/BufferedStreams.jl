@@ -1,4 +1,3 @@
-__precompile__()
 
 module BufferedStreams
 
@@ -12,8 +11,6 @@ export BufferedInputStream,
        upanchor!,
        takeanchored!
 
-using Compat
-
 # default buffer size is 128 KiB
 const default_buffer_size = 128 * 2^10
 
@@ -25,10 +22,7 @@ function _datasize(nbytes)
     k = 1
     for suffix in [" KiB", " MiB", " GiB", " TiB"]
         if nbytes < 1024^(k+1)
-            # Note: The base keyword argument is needed until
-            # https://github.com/JuliaLang/Compat.jl/pull/537 lands or
-            # Compat is dropped.
-            return string(Compat.floor(nbytes / 1024^k, digits = 1, base = 10), suffix)
+            return string(floor(nbytes / 1024^k; digits = 1), suffix)
         end
         k += 1
     end

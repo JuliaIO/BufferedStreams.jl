@@ -1,10 +1,5 @@
 using BufferedStreams
-using Compat
-if VERSION > v"0.7-"
-    using Test
-else
-    using Base.Test
-end
+using Test
 
 struct InfiniteStream <: IO
     byte::UInt8
@@ -102,13 +97,13 @@ end
         @test peek(stream) === 0x02
     end
 
-    @testset "nb_available" begin
+    @testset "bytesavailable" begin
         stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
-        @test nb_available(stream) == 2
+        @test bytesavailable(stream) == 2
         read(stream, 1)
-        @test nb_available(stream) == 1
+        @test bytesavailable(stream) == 1
         read(stream, 1)
-        @test nb_available(stream) == 0
+        @test bytesavailable(stream) == 0
     end
 
     @testset "peekbytes!" begin
@@ -379,11 +374,7 @@ end
     @testset "misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
-        repr_regex = ifelse(
-            VERSION >= v"0.7-",
-            r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$",
-            r"^BufferedStreams.BufferedInputStream{.*}\(<.* \d+% filled>\)$"
-        )
+        repr_regex = r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$"
         @test occursin(repr_regex, repr(stream))
 
         stream = BufferedInputStream(IOBuffer("foobar"), 4 * 2^10)
@@ -391,7 +382,7 @@ end
         @test occursin(r"KiB", repr(stream))
 
         close(stream)
-        @test occursin(ifelse(VERSION >= v"0.7-", r"^BufferedInputStream{.*}\(<closed>\)$", r"^BufferedStreams.BufferedInputStream{.*}\(<closed>\)$"), repr(stream))
+        @test occursin(r"^BufferedInputStream{.*}\(<closed>\)$", repr(stream))
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
@@ -529,9 +520,9 @@ end
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)
         @test pointer(stream) == pointer(stream.buffer)
-        @test occursin(ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<.* \d+% filled>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<.* \d+% filled>\)$"), string(stream))
+        @test occursin(r"^BufferedOutputStream{.*}\(<.* \d+% filled>\)$", string(stream))
         close(stream)
-        @test occursin(ifelse(VERSION >= v"0.7-", r"^BufferedOutputStream{.*}\(<closed>\)$", r"^BufferedStreams\.BufferedOutputStream{.*}\(<closed>\)$"), string(stream))
+        @test occursin(r"^BufferedOutputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
 end

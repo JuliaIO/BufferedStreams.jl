@@ -62,7 +62,9 @@ end
 
 function flushbuffer!(stream::BufferedOutputStream{EmptyStream}, eof::Bool=false)
     if available_bytes(stream) == 0
-        resize!(stream.buffer, max(nextpow2(2 * length(stream.buffer)), 16))
+        sz = 2 * length(stream.buffer)
+        sz = sz > 0 ? nextpow(2, sz) : 0
+        resize!(stream.buffer, max(sz, 16))
     end
     return
 end
@@ -79,7 +81,8 @@ function Base.write(stream::BufferedOutputStream{EmptyStream}, data::Vector{UInt
     checkopen(stream)
     n = length(data)
     if n > available_bytes(stream)
-        resize!(stream.buffer, nextpow2(n + stream.position - 1))
+        sz = 
+        resize!(stream.buffer, nextpow(2, n + stream.position - 1))
     end
     copyto!(stream.buffer, stream.position, data, 1)
     stream.position += n
@@ -118,8 +121,7 @@ function Base.length(stream::BufferedOutputStream{EmptyStream})
     return stream.position - 1
 end
 
-function Base.:(==)(a::BufferedOutputStream{EmptyStream},
-                    b::BufferedOutputStream{EmptyStream})
+function Base.:(==)(a::BufferedOutputStream{EmptyStream}, b::BufferedOutputStream{EmptyStream})
     if a.position == b.position
         return ccall(:memcmp, Cint, (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t),
                      a.buffer, b.buffer, a.position - 1) == 0
