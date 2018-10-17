@@ -14,6 +14,6 @@ matrix:
   - julia: nightly
 
 after_success:
-  - julia -e 'using Pkg; Pkg.add("Documenter"); Pkg.add("Coverage")'
+  - julia -e 'using Pkg; ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps); Pkg.add("Coverage")'
   - julia -e 'import BufferedStreams; cd(dirname(dirname(pathof(BufferedStreams)))); include(joinpath("docs", "make.jl"))'
   - julia -e 'using Coverage; import BufferedStreams; cd(dirname(dirname(pathof(BufferedStreams)))); Codecov.submit(process_folder())'
