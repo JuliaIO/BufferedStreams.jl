@@ -4,7 +4,7 @@
 [![](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/blob/master/LICENSE) 
 [![](https://img.shields.io/badge/docs-stable-blue.svg?style=flat-square)](https://biojulia.github.io/BufferedStreams.jl/stable) 
 [![](https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://biojulia.github.io/BufferedStreams.jl/latest)
-![Lifecycle](https://img.shields.io/badge/lifecycle-stable-green.svg?style=flat-square)
+[![Project Status: Inactive](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
 [![Chat on Discord](https://img.shields.io/badge/discord-chat-blue.svg?style=flat-square&logo=discord&colorB=%237289DA)](https://discord.gg/z73YNFz)
 
 
