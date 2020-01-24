@@ -26,7 +26,7 @@ function _datasize(nbytes)
         end
         k += 1
     end
-    return string(Compat.floor(nbytes / 1024^k, digits = 1, base = 10), " PiB")
+    return string(floor(nbytes / 1024^k, digits = 1, base = 10), " PiB")
 end
 
 include("bufferedinputstream.jl")
