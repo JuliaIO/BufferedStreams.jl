@@ -393,7 +393,11 @@ end
 
         # read byte by byte
         ok = true
-        for i in 1:2^30
+        for i in 1:2^29
+            ok = ok && (read(stream, UInt8) == byte)
+        end
+        @info "half done with massive read!" # avoid travis timeout
+        for i in 1+2^29:2^30
             ok = ok && (read(stream, UInt8) == byte)
         end
         @test ok
