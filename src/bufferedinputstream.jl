@@ -147,7 +147,7 @@ end
 """
 Return the next byte from the input stream without advancing the position.
 """
-@inline function peek(stream::BufferedInputStream)
+@inline function Base.peek(stream::BufferedInputStream)
     checkopen(stream)
     if stream.position > stream.available
         if fillbuffer!(stream) < 1

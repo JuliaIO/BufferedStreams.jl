@@ -3,7 +3,6 @@ module BufferedStreams
 
 export BufferedInputStream,
        BufferedOutputStream,
-       peek,
        peekbytes!,
        fillbuffer!,
        isanchored,

@@ -1,10 +1,12 @@
 # BufferedStreams
 
-[![](https://img.shields.io/github/release/BioJulia/BufferedStreams.jl.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/releases/latest) 
-[![](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/blob/master/LICENSE) 
-[![](https://img.shields.io/badge/docs-stable-blue.svg?style=flat-square)](https://biojulia.github.io/BufferedStreams.jl/stable) 
-[![](https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square)](https://biojulia.github.io/BufferedStreams.jl/latest)
-![Lifecycle](https://img.shields.io/badge/lifecycle-stable-green.svg?style=flat-square)
+
+
+[![](https://img.shields.io/github/release/BioJulia/BufferedStreams.jl.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/releases/latest)
+[![](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](https://github.com/BioJulia/BufferedStreams.jl/blob/master/LICENSE)
+[![Build Status](https://github.com/BioJulia/BufferedStreams.jl/workflows/CI/badge.svg)](https://github.com/BioJulia/BufferedStreams.jl/actions?query=workflows/CI) [![codecov](https://codecov.io/gh/BioJulia/BufferedStreams.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/BioJulia/BufferedStreams.jl)
+[![](https://img.shields.io/badge/docs-stable-blue.svg?style=flat-square)](https://biojulia.github.io/BufferedStreams.jl/stable)
+[![Project Status: Inactive](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
 [![Chat on Discord](https://img.shields.io/badge/discord-chat-blue.svg?style=flat-square&logo=discord&colorB=%237289DA)](https://discord.gg/z73YNFz)
 
 
@@ -18,22 +20,11 @@ automatically making incremental reading and writing faster.
 
 ```julia
 using Pkg
-add("BufferedStreams")
-# Pkg.add("BufferedStreams") on julia prior to v0.7
+Pkg.add("BufferedStreams")
 ```
 
 If you are interested in the cutting edge of the development, please check out
 the master branch to try new features before release.
-
-
-## Testing
-
-BufferedStreams is tested against Julia `0.7` and `1.0` on Linux, OS X, and Windows.
-
-| **PackageEvaluator** | **Latest Build Status** |
-|:--------------------:|:-----------------------:|
-| [![](https://pkg.julialang.org/badges/BufferedStreams_0.7.svg)](https://pkg.julialang.org/detail/BufferedStreams) [![](https://pkg.julialang.org/badges/BufferedStreams_1.0.svg)](https://pkg.julialang.org/detail/BufferedStreams) | [![](https://img.shields.io/travis/BioJulia/BufferedStreams.jl/master.svg?label=Linux+/+macOS)](https://travis-ci.org/BioJulia/BufferedStreams.jl) [![](https://ci.appveyor.com/api/projects/status/0f7jv901adjmp8o7?svg=true)](https://ci.appveyor.com/project/Ward9250/bufferedstreams-jl/branch/master) [![](https://codecov.io/gh/BioJulia/BufferedStreams.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/BioJulia/BufferedStreams.jl) |
-
 
 ## Contributing
 

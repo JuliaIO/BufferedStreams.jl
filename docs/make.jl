@@ -1,7 +1,10 @@
 using Documenter, BufferedStreams
 
 makedocs(
-    format = :html,
+    format = Documenter.HTML(
+        prettyurls = !("local" in ARGS),
+        canonical = "https://biojulia.net/BufferedStreams.jl/stable/",
+    ),
     sitename = "BufferedStreams",
     pages = [
         "Home" => "index.md",
@@ -13,9 +16,5 @@ makedocs(
 
 deploydocs(
     repo = "github.com/BioJulia/BufferedStreams.jl.git",
-    julia = "1.0",
-    osname = "linux",
     target = "build",
-    deps = nothing,
-    make = nothing
 )
