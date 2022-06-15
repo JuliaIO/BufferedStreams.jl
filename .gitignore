@@ -1,3 +1,6 @@
+# Built documentation
+docs/build/
+
 # Julia temp files
 *.cov
 *.mem
@@ -9,3 +12,5 @@
 # OS temp or generated files
 .DS_Store
 .directory
+
+Manifest.toml
