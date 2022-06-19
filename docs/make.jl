@@ -3,7 +3,7 @@ using Documenter, BufferedStreams
 makedocs(
     format = Documenter.HTML(
         prettyurls = !("local" in ARGS),
-        canonical = "https://biojulia.net/BufferedStreams.jl/stable/",
+        canonical = "https://juliaio.net/BufferedStreams.jl/stable/",
     ),
     sitename = "BufferedStreams",
     pages = [
@@ -15,6 +15,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/BioJulia/BufferedStreams.jl.git",
+    repo = "github.com/JuliaIO/BufferedStreams.jl.git",
     target = "build",
 )
