@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-06-15
+### Changed
+- Moved to suport Julia LTS (1.6).
+- Maintaince of the packages changed from the BioJulia org to the JuliaIO org.
+
 ## [1.0.0] - 2018-08-11
 ### Changed
 - The first major stable release
@@ -53,14 +58,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Revised takebuf methods, thanks @musm
 
-[Unreleased]: https://github.com/BioJulia/BioCore.jl/compare/v1.3.0...HEAD
-[1.0.0]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.4.1...v1.0.0
-[0.4.1]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.3.3...v0.4.0
-[0.3.3]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.3.2...v0.3.3
-[0.3.2]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.3.1...v0.3.2
-[0.3.1]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.2.3...v0.3.0
-[0.2.3]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.2.2...v0.2.3
-[0.2.2]: https://github.com/BioJulia/BufferedStreams.jl/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/BioJulia/BufferedStreams.jl/tree/v0.2.1
+[Unreleased]: https://github.com/JuliaIO/BioCore.jl/compare/v1.3.0...HEAD
+[1.0.0]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.4.1...v1.0.0
+[0.4.1]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.3.3...v0.4.0
+[0.3.3]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.2.3...v0.3.0
+[0.2.3]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/JuliaIO/BufferedStreams.jl/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/JuliaIO/BufferedStreams.jl/tree/v0.2.1
