@@ -516,6 +516,30 @@ end
         end
     end
 
+    @testset "position" begin
+        iob = IOBuffer()
+        sink = IOBuffer()
+        stream = BufferedOutputStream(sink, 16)
+        for len in 0:10:100
+            write(stream, repeat("x", len))
+            write(iob, repeat("x", len))
+            @test position(stream) == position(iob)
+        end
+        close(stream)
+        close(iob)
+        @test position(stream) == position(sink) == position(iob)
+
+        mktemp() do path, sink
+            stream = BufferedOutputStream(sink, 16)
+            pos = 0
+            for len in 0:10:100
+                write(stream, repeat("x", len))
+                pos += len
+                @test position(stream) == pos
+            end
+        end
+    end
+
     @testset "misc." begin
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)

@@ -165,6 +165,10 @@ function Base.eof(stream::BufferedOutputStream)
     return true
 end
 
+function Base.position(stream::BufferedOutputStream)
+    return max(0, position(stream.sink) + stream.position - 1)
+end
+
 function Base.pointer(stream::BufferedOutputStream, index::Integer = 1)
     return pointer(stream.buffer, stream.position + index - 1)
 end
