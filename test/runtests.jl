@@ -272,6 +272,7 @@ end
 
         stream = BufferedInputStream(IOBuffer(data), 1024)
         @test all(Bool[test_seek(stream, p) for p in positions])
+        @test seekstart(stream) === stream
     end
 
     @testset "skip" begin
