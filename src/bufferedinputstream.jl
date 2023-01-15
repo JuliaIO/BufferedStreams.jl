@@ -354,6 +354,7 @@ function Base.seek(stream::BufferedInputStream{T}, pos::Integer) where T
             string("Can't seek in input stream with source of type ", T)))
         # TODO: Allow seeking forwards by just reading and discarding input
     end
+    return stream
 end
 
 function Base.isopen(stream::BufferedInputStream)

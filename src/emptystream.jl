@@ -46,6 +46,7 @@ function Base.seek(stream::BufferedInputStream{EmptyStream}, pos::Integer)
     else
         throw(BoundsError)
     end
+    return stream
 end
 
 
