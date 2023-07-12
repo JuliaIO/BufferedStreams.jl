@@ -255,6 +255,15 @@ end
         end
 
         @test all(Bool[test_anchor() for _ in 1:100])
+
+        # issue #78
+        let io = BufferedInputStream(IOBuffer("α∆"), 1)
+            @test read(io, Char) == 'α'
+            mark(io)
+            @test [read(io, UInt8) for _=1:3] == [0xe2, 0x88, 0x86]
+            reset(io)
+            @test read(io, Char) == '∆'
+        end
     end
 
     @testset "seek" begin
