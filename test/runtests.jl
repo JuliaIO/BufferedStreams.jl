@@ -1,5 +1,7 @@
 using BufferedStreams
-using Test
+using Test, Random
+
+Random.seed!(314159)
 
 struct InfiniteStream <: IO
     byte::UInt8
