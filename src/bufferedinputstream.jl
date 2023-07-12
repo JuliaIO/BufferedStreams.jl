@@ -390,3 +390,25 @@ end
     end
     return true
 end
+
+if isdefined(Base, :copyuntil) # julia#48273 in Julia 1.11
+    # optimized copyuntil using findnext on the buffer:
+    function Base.copyuntil(out::IO, stream::BufferedInputStream, delim::UInt8; keep::Bool=false)
+        @views while ensurebuffered!(stream, 1)
+            p = findnext(==(delim), stream.buffer[1:stream.available], stream.position)
+            if isnothing(p)
+                # delim not found, copy buffer & keep reading
+                write(out, stream.buffer[stream.position:stream.available])
+                stream.position = stream.available + 1
+            else
+                # delim found, copy buffer to delim & stop
+                oldp = stream.position
+                stream.position = p + 1
+                p -= !keep
+                write(out, stream.buffer[oldp:p])
+                return out
+            end
+        end
+        return out
+    end
+end
