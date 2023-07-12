@@ -412,40 +412,13 @@ if isdefined(Base, :copyuntil) # julia#48273 in Julia 1.11
         return out
     end
 
-    # optimized copyline (for readline), which is more complicated
-    # in the keep=false case because of CRLF handling
-    function Base.copyline(out::IO, stream::BufferedInputStream; keep::Bool=false)
-        keep && return copyuntil(out, stream, 0x0a, keep=true)
-
-        # !keep case is more complicated to deal with CRLF logic
-        cr = false # whether last byte to write was CR
-        @views @inbounds while ensurebuffered!(stream, 1)
-            p = findnext(==(0x0a), stream.buffer[1:stream.available], stream.position)
-            if isnothing(p)
-                # LF not found, copy buffer & keep reading
-                cr && write(out, 0x0d) # finish previous write
-                cr = stream.position ≤ stream.available && stream.buffer[stream.available] == 0x0d
-                write(out, stream.buffer[stream.position:stream.available-cr])
-                stream.position = stream.available + 1
-            else
-                # LF found, copy buffer up to [CR]LF & stop
-                oldp = stream.position
-                stream.position = p + 1
-                p -= 1 # omit LF
-                if p ≥ oldp
-                    cr && write(out, 0x0d) # finish previous write
-                    p -= stream.buffer[p] == 0x0d # omit CRLF
-                else
-                    p -= cr # omit CRLF from previous iteration
-                end
-                write(out, stream.buffer[oldp:p])
-                break
-            end
-        end
-        return out
-    end
-
-    # fix method ambiguity:
-    Base.copyline(out::Base.GenericIOBuffer, stream::BufferedInputStream; keep::Bool=false) =
-        @invoke copyline(out::IO, stream::BufferedInputStream; keep)
+    # in principle, we could also similarly optimize Base.copyline,
+    # but this is used mainly for readline, and there is already
+    # an optimized copyline(out::IOBuffer, in::IO) method used there
+    # that calls our optimized copyuntil above.
+    #
+    # For copyline(out::IO, in::IO), it only calls copyuntil for keep=false,
+    # whereas the keep=true logic is more complicated to handle CRLF.
+    # So in principle we could have a faster in::BufferedInputStream method
+    # for this case, but I'm not sure how many people care.
 end
