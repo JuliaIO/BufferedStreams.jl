@@ -413,8 +413,10 @@ end
     end
 
     @testset "copyuntil" begin
-        # note: readlines calls readuntil which calls copyuntil in Julia 1.11
-        data = join(randstring(rand(0:32))*'\n' for n=0:100) * "\nfooooooobar"
+        # note: readlines calls readuntil which calls copyline,
+        # which calls copyuntil for keep=true, in Julia 1.11
+        data = join(randstring(rand(0:32))*(rand(Bool) ? "\n" : "\r\n")
+                    for n=0:100) * "\n\r\n\r\r\r\r\nfooooooobar"
         for bufsize in (1, 3, 7, 128), keep in (true, false)
             s = BufferedInputStream(IOBuffer(data), bufsize)
             @test readlines(s; keep) == readlines(IOBuffer(data); keep)
