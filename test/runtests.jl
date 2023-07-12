@@ -409,6 +409,30 @@ end
         stream = BufferedInputStream(IOBuffer("some data"))
         @test readavailable(stream) == b"some data"
     end
+
+    @testset "read/peek/skipchars" begin
+        ascii = randstring(100)
+        unicode = randstring("xα∆🐨", 100) * 'β' # mix of 1/2/3/4-byte chars
+        invalid = String(rand(UInt8, 100)) # contains invalid UTF-8 data
+        for data in (ascii, unicode, invalid), bufsize in (1,2,4,15,1024)
+            io = BufferedInputStream(IOBuffer(data), bufsize)
+            @test join(collect(readeach(io, Char))) == data
+        end
+        for bufsize in (1,2,3,4,15)
+            data = "xα∆🐨" * unicode * invalid
+            io = BufferedInputStream(IOBuffer(data), bufsize)
+            for c in data
+                @test peek(io, Char) == peek(io, Char) == c
+                @test read(io, Char) == c
+            end
+        end
+        for bufsize in (1,2,3,4,15), c in "xα∆🐨", n in 1:5, linecomment in (nothing, '#')
+            data = c^n * "#" * c^n * "\r\n" * "😄😢"
+            io = BufferedInputStream(IOBuffer(data), bufsize)
+            @test skipchars(==(c), io; linecomment) === io
+            @test read(io, Char) == (isnothing(linecomment) ? '#' : '😄')
+        end
+    end
 end
 
 
