@@ -394,6 +394,7 @@ end
 if isdefined(Base, :copyuntil) # julia#48273 in Julia 1.11
     # optimized copyuntil using findnext on the buffer:
     function Base.copyuntil(out::IO, stream::BufferedInputStream, delim::UInt8; keep::Bool=false)
+        checkopen(stream)
         @views @inbounds while ensurebuffered!(stream, 1)
             p = findnext(==(delim), stream.buffer[1:stream.available], stream.position)
             if isnothing(p)
