@@ -82,7 +82,7 @@ function shiftdata!(stream::BufferedInputStream)
         return 0
     else
         if stream.anchor > 0
-            @assert stream.position ≥ stream.anchor # negative seek is not currently allowed
+            @assert stream.position ≥ stream.anchor
             shift = stream.anchor - 1
             n = stream.available - shift
             n > 0 && copyto!(stream.buffer, 1, stream.buffer, stream.anchor, n)
