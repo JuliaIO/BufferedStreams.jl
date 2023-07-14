@@ -217,11 +217,10 @@ function _readchar(stream::BufferedInputStream)
     # code adapted from Base.read(io::IO, ::Type{Char}):
     @inbounds b0 = stream.buffer[p]
     p += 1
-    l::UInt8 = leading_ones(b0)
+    l = 0x08 * (0x04 - (leading_ones(b0) % UInt8))
     c = UInt32(b0) << 24
-    if 2 ≤ l ≤ 4
+    if l < 0x18
         s = 16
-        l = 8(4-l)
         while s ≥ l && p ≤ avail
             @inbounds b = stream.buffer[p]
             b & 0xc0 == 0x80 || break
