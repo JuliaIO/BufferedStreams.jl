@@ -54,17 +54,18 @@ function Base.show(io::IO, stream::BufferedInputStream{T}) where T
 end
 
 """
-Refill the buffer, optionally moving and retaining part of the data.
+Refill the buffer, optionally moving and retaining part of the data,
+ensuring buffer space to read at least `minalloc` bytes.
 """
-function fillbuffer!(stream::BufferedInputStream)
+function fillbuffer!(stream::BufferedInputStream, minalloc::Int = 1)
     if eof(stream.source)
         return 0
     end
 
     shiftdata!(stream)
     margin = length(stream.buffer) - stream.available
-    if margin == 0
-        resize!(stream.buffer, length(stream.buffer) * 2)
+    if margin < minalloc
+        resize!(stream.buffer, length(stream.buffer) * 2 + minalloc-1)
     end
 
     nbytes = readbytes!(
@@ -206,6 +207,63 @@ for T in [Int16, UInt16, Int32, UInt32, Int64, UInt64, Int128, UInt128, Float16,
             return ret
         end
     end
+end
+
+# fast char reader, split into lower-level routine for read(s, Char) + peek(s, Char) etc.
+function _readchar(stream::BufferedInputStream)
+    ensurebuffered!(stream, 4)
+    p, avail = stream.position, stream.available
+    p > avail && throw(EOFError())
+
+    # code adapted from Base.read(io::IO, ::Type{Char}):
+    @inbounds b0 = stream.buffer[p]
+    p += 1
+    l = 0x08 * (0x04 - (leading_ones(b0) % UInt8))
+    c = UInt32(b0) << 24
+    if l < 0x18
+        s = 16
+        while s ≥ l && p ≤ avail
+            @inbounds b = stream.buffer[p]
+            b & 0xc0 == 0x80 || break
+            p += 1
+            c |= UInt32(b) << s
+            s -= 8
+        end
+    end
+    return reinterpret(Char, c), p
+end
+function Base.read(stream::BufferedInputStream, ::Type{Char})
+    checkopen(stream)
+    c, stream.position = _readchar(stream)
+    return c
+end
+function Base.peek(stream::BufferedInputStream, ::Type{Char})
+    checkopen(stream)
+    c, _ = _readchar(stream)
+    return c
+end
+function Base.skipchars(predicate, stream::BufferedInputStream; linecomment=nothing)
+    checkopen(stream)
+    while !eof(stream)
+        c, p = _readchar(stream)
+        if c === linecomment
+            stream.position = p # next Char
+            while ensurebuffered!(stream, 1)
+                @views lf = findnext(==(0x0a), stream.buffer[1:stream.available], stream.position)
+                if isnothing(lf)
+                    stream.position = stream.available + 1 # fill buffer again
+                else
+                    stream.position = lf + 1 # skip to next line
+                    break
+                end
+            end
+        elseif predicate(c)
+            stream.position = p # skip to next Char
+        else
+            break
+        end
+    end
+    return stream
 end
 
 if isdefined(Base, :unsafe_read)
@@ -384,7 +442,7 @@ end
 
 @inline function ensurebuffered!(stream::BufferedInputStream, nb::Integer)
     if available_bytes(stream) < nb
-        fillbuffer!(stream)
+        fillbuffer!(stream, nb)
         if available_bytes(stream) < nb
             return false
         end
