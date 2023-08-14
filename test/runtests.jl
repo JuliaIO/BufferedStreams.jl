@@ -431,9 +431,8 @@ end
             @test readlines(s; keep) == readlines(IOBuffer(data); keep)
         end
     end
-end
-              
-@testset "read/peek/skipchars" begin
+     
+    @testset "read/peek/skipchars" begin
         ascii = randstring(100)
         unicode = randstring("xα∆🐨", 100) * 'β' # mix of 1/2/3/4-byte chars
         invalid = String(rand(UInt8, 100)) # contains invalid UTF-8 data
