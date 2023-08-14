@@ -449,3 +449,36 @@ end
     end
     return true
 end
+
+if isdefined(Base, :copyuntil) # julia#48273 in Julia 1.11
+    # optimized copyuntil using findnext on the buffer:
+    function Base.copyuntil(out::IO, stream::BufferedInputStream, delim::UInt8; keep::Bool=false)
+        checkopen(stream)
+        @views @inbounds while ensurebuffered!(stream, 1)
+            p = findnext(==(delim), stream.buffer[1:stream.available], stream.position)
+            if isnothing(p)
+                # delim not found, copy buffer & keep reading
+                write(out, stream.buffer[stream.position:stream.available])
+                stream.position = stream.available + 1
+            else
+                # delim found, copy buffer up to delim & stop
+                oldp = stream.position
+                stream.position = p + 1
+                p -= !keep
+                write(out, stream.buffer[oldp:p])
+                break
+            end
+        end
+        return out
+    end
+
+    # in principle, we could also similarly optimize Base.copyline,
+    # but this is used mainly for readline, and there is already
+    # an optimized copyline(out::IOBuffer, in::IO) method used there
+    # that calls our optimized copyuntil above.
+    #
+    # For copyline(out::IO, in::IO), it only calls copyuntil for keep=false,
+    # whereas the keep=true logic is more complicated to handle CRLF.
+    # So in principle we could have a faster in::BufferedInputStream method
+    # for this case, but I'm not sure how many people care.
+end
