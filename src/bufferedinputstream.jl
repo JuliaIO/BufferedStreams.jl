@@ -81,10 +81,11 @@ function shiftdata!(stream::BufferedInputStream)
     if stream.immobilized
         return 0
     else
-        if stream.anchor > 0 && stream.available - stream.anchor + 1 > 0
+        if stream.anchor > 0
+            @assert stream.position ≥ stream.anchor
             shift = stream.anchor - 1
             n = stream.available - shift
-            copyto!(stream.buffer, 1, stream.buffer, stream.anchor, n)
+            n > 0 && copyto!(stream.buffer, 1, stream.buffer, stream.anchor, n)
             stream.anchor -= shift
         elseif stream.available - stream.position + 1 > 0
             shift = stream.position - 1
