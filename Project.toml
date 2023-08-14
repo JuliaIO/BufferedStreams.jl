@@ -1,6 +1,6 @@
 name = "BufferedStreams"
 uuid = "e1450e63-4bb3-523b-b2a4-4ffa8c0fd77d"
-version = "1.2.0"
+version = "1.2.1"
 
 [compat]
 julia = "1.6"
