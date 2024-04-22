@@ -30,7 +30,8 @@ end
 #   * Similar, we manually set the buffer size to be smaller than the default to
 #     force more buffer refills.
 
-@testset "BufferedInputStream" begin
+# Uncommenting top-level testset makes the tests take ~100x longer
+# @testset "BufferedInputStream" begin
     @testset "read" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
@@ -431,7 +432,7 @@ end
             @test readlines(s; keep) == readlines(IOBuffer(data); keep)
         end
     end
-     
+
     @testset "read/peek/skipchars" begin
         ascii = randstring(100)
         unicode = randstring("xα∆🐨", 100) * 'β' # mix of 1/2/3/4-byte chars
@@ -455,10 +456,10 @@ end
             @test read(io, Char) == (isnothing(linecomment) ? '#' : '😄')
         end
     end
-end
+# end
 
 
-@testset "BufferedOutputStream" begin
+# @testset "BufferedOutputStream" begin
     @testset "write" begin
         data = rand(UInt8, 1000000)
         stream1 = BufferedOutputStream()
@@ -596,4 +597,4 @@ end
         @test occursin(r"^BufferedOutputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
-end
+# end
