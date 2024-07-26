@@ -30,8 +30,9 @@ end
 #   * Similar, we manually set the buffer size to be smaller than the default to
 #     force more buffer refills.
 
-@testset "BufferedInputStream" begin
-    @testset "read" begin
+# Uncommenting top-level testset makes the tests take ~100x longer
+# @testset "BufferedInputStream" begin
+    @testset "BufferedInputStream: read" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
         read_data = UInt8[]
@@ -78,7 +79,7 @@ end
     end
 
     if isdefined(Base, :unsafe_read)
-        @testset "unsafe_read" begin
+        @testset "BufferedInputStream: unsafe_read" begin
             stream = BufferedInputStream(IOBuffer("abcdefg"), 3)
             data = Vector{UInt8}(undef, 7)
             unsafe_read(stream, pointer(data, 1), 1)
@@ -90,7 +91,7 @@ end
         end
     end
 
-    @testset "peek" begin
+    @testset "BufferedInputStream: peek" begin
         stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
         @test peek(stream) === 0x01
         @test peek(stream) === 0x01
@@ -99,7 +100,7 @@ end
         @test peek(stream) === 0x02
     end
 
-    @testset "bytesavailable" begin
+    @testset "BufferedInputStream: bytesavailable" begin
         stream = BufferedInputStream(IOBuffer([0x01, 0x02]))
         @test bytesavailable(stream) == 2
         read(stream, 1)
@@ -108,7 +109,7 @@ end
         @test bytesavailable(stream) == 0
     end
 
-    @testset "peekbytes!" begin
+    @testset "BufferedInputStream: peekbytes!" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
@@ -142,7 +143,7 @@ end
         @test_throws Exception peekbytes!(stream, read_data)
     end
 
-    @testset "readbytes!" begin
+    @testset "BufferedInputStream: readbytes!" begin
         stream = BufferedInputStream(IOBuffer([0x01:0xff;]), 4)
         @test !eof(stream)
         out = zeros(UInt8, 2)
@@ -159,7 +160,7 @@ end
         @test eof(stream)
     end
 
-    @testset "readuntil" begin
+    @testset "BufferedInputStream: readuntil" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(IOBuffer(data), 1024)
 
@@ -193,7 +194,7 @@ end
         @test num_zeros == true_num_zeros
     end
 
-    @testset "arrays" begin
+    @testset "BufferedInputStream: arrays" begin
         data = rand(UInt8, 1000000)
         stream = BufferedInputStream(data)
         read_data = UInt8[]
@@ -204,7 +205,7 @@ end
         @test data == read(BufferedInputStream(data))
     end
 
-    @testset "marks" begin
+    @testset "BufferedInputStream: marks" begin
         # very small buffer
         stream = BufferedInputStream(IOBuffer([0x01:0xff;]), 2)
         @test !ismarked(stream)
@@ -225,7 +226,7 @@ end
         @test_throws ErrorException reset(stream)
     end
 
-    @testset "anchors" begin
+    @testset "BufferedInputStream: anchors" begin
         data = rand(UInt8, 100000)
 
         function random_range(n)
@@ -268,7 +269,7 @@ end
         end
     end
 
-    @testset "seek" begin
+    @testset "BufferedInputStream: seek" begin
         n = 100000
         data = rand(UInt8, n)
         positions = rand(0:n-1, 1000)
@@ -286,7 +287,7 @@ end
         @test seekstart(stream) === stream
     end
 
-    @testset "skip" begin
+    @testset "BufferedInputStream: skip" begin
         n = 100000
         data = rand(UInt8, n)
         positions = rand(0:n-1, 1000)
@@ -313,7 +314,7 @@ end
                        for (p, offset) in zip(positions, offsets)])
     end
 
-    @testset "close" begin
+    @testset "BufferedInputStream: close" begin
         iobuffer = IOBuffer([0x00, 0x01])
         stream = BufferedInputStream(iobuffer)
         @test isopen(stream)
@@ -326,7 +327,7 @@ end
         @test close(stream) === nothing
     end
 
-    @testset "iostream" begin
+    @testset "BufferedInputStream: iostream" begin
         mktemp() do path, input
             write(input, [0x01, 0x02, 0x03, 0x04, 0x05])
             flush(input)
@@ -349,7 +350,7 @@ end
         end
     end
 
-    @testset "immobilized buffer" begin
+    @testset "BufferedInputStream: immobilized buffer" begin
         stream = BufferedInputStream(IOBuffer("abcdefg"), 2)
         stream.immobilized = false
         @assert read(stream, UInt8) == UInt8('a')
@@ -375,7 +376,7 @@ end
         @test data[4:7] == b"defg"
     end
 
-    @testset "shiftdata!" begin
+    @testset "BufferedInputStream: shiftdata!" begin
         stream = BufferedInputStream(IOBuffer("abcdefg"), 2)
         read(stream, 1)
         @test BufferedStreams.shiftdata!(stream) > 0
@@ -383,7 +384,7 @@ end
         @test BufferedStreams.shiftdata!(stream) > 0
     end
 
-    @testset "misc." begin
+    @testset "BufferedInputStream: misc." begin
         stream = BufferedInputStream(IOBuffer("foobar"), 10)
         @test !BufferedStreams.ensurebuffered!(stream, 10)
         repr_regex = r"^BufferedInputStream{.*}\(<.* \d+% filled>\)$"
@@ -398,7 +399,7 @@ end
         @test_throws ArgumentError BufferedInputStream(IOBuffer("foo"), 0)
     end
 
-    @testset "massive read" begin
+    @testset "BufferedInputStream: massive read" begin
         byte = 0x34
         bufsize = 1024
         stream = BufferedInputStream(InfiniteStream(byte), bufsize)
@@ -416,12 +417,12 @@ end
         @test length(stream.buffer) == 1024
     end
 
-    @testset "readavailable" begin
+    @testset "BufferedInputStream: readavailable" begin
         stream = BufferedInputStream(IOBuffer("some data"))
         @test readavailable(stream) == b"some data"
     end
 
-    @testset "copyuntil" begin
+    @testset "BufferedInputStream: copyuntil" begin
         # note: readlines calls readuntil which calls copyline,
         # which calls copyuntil for keep=true, in Julia 1.11
         data = join(randstring(rand(0:32))*(rand(Bool) ? "\n" : "\r\n")
@@ -431,8 +432,8 @@ end
             @test readlines(s; keep) == readlines(IOBuffer(data); keep)
         end
     end
-     
-    @testset "read/peek/skipchars" begin
+
+    @testset "BufferedInputStream: read/peek/skipchars" begin
         ascii = randstring(100)
         unicode = randstring("xα∆🐨", 100) * 'β' # mix of 1/2/3/4-byte chars
         invalid = String(rand(UInt8, 100)) # contains invalid UTF-8 data
@@ -455,11 +456,11 @@ end
             @test read(io, Char) == (isnothing(linecomment) ? '#' : '😄')
         end
     end
-end
+# end
 
-
-@testset "BufferedOutputStream" begin
-    @testset "write" begin
+# Uncommenting top-level testset makes the tests take ~100x longer
+# @testset "BufferedOutputStream" begin
+    @testset "BufferedOutputStream: write" begin
         data = rand(UInt8, 1000000)
         stream1 = BufferedOutputStream()
         sink = IOBuffer()
@@ -477,7 +478,7 @@ end
         @test !isopen(sink)
     end
 
-    @testset "arrays" begin
+    @testset "BufferedOutputStream: arrays" begin
         expected = UInt8[]
         stream1 = BufferedOutputStream()
         sink = IOBuffer()
@@ -496,7 +497,7 @@ end
         close(stream2)
     end
 
-    @testset "takebuf_string" begin
+    @testset "BufferedOutputStream: takebuf_string" begin
         data = rand('A':'z', 1000000)
         iobuf = IOBuffer()
         stream = BufferedOutputStream()
@@ -507,7 +508,7 @@ end
         @test String(take!((stream))) == String(take!((iobuf)))
     end
 
-    @testset "write_result" begin
+    @testset "BufferedOutputStream: write_result" begin
         sink = IOBuffer()
         stream = BufferedOutputStream(sink, 16)
         for len in 0:10:100
@@ -516,7 +517,7 @@ end
         end
     end
 
-    @testset "close" begin
+    @testset "BufferedOutputStream: close" begin
         iobuffer = IOBuffer()
         stream = BufferedOutputStream(iobuffer)
         @test isopen(stream)
@@ -528,7 +529,7 @@ end
         @test_throws Exception write(stream, 0x00)
     end
 
-    @testset "vector sink" begin
+    @testset "BufferedOutputStream: vector sink" begin
         sink = UInt8[]
         stream = BufferedOutputStream(sink)
         write(stream, 0x00)
@@ -542,7 +543,7 @@ end
         @test_throws Exception write(stream, 0x00)
     end
 
-    @testset "iostream" begin
+    @testset "BufferedOutputStream: iostream" begin
         mktemp() do path, out
             stream = BufferedOutputStream(out, 10)
             write(stream, "hello")
@@ -563,7 +564,7 @@ end
         end
     end
 
-    @testset "position" begin
+    @testset "BufferedOutputStream: position" begin
         iob = IOBuffer()
         sink = IOBuffer()
         stream = BufferedOutputStream(sink, 16)
@@ -587,7 +588,7 @@ end
         end
     end
 
-    @testset "misc." begin
+    @testset "BufferedOutputStream: misc." begin
         stream = BufferedOutputStream(IOBuffer(), 5)
         @test eof(stream)
         @test pointer(stream) == pointer(stream.buffer)
@@ -596,4 +597,4 @@ end
         @test occursin(r"^BufferedOutputStream{.*}\(<closed>\)$", string(stream))
         @test_throws ArgumentError BufferedOutputStream(IOBuffer(), 0)
     end
-end
+# end
