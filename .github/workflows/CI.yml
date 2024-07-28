@@ -39,6 +39,7 @@ jobs:
         with:
           file: lcov.info
           fail_ci_if_error: true # So that we notice quickly if Codecov is not uploading
+          token: ${{ secrets.CODECOV_TOKEN }}
   docs:
     name: Documentation
     runs-on: ubuntu-latest
